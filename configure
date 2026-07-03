@@ -33,10 +33,10 @@ RELA_CONFIG_FILE="$(realpath --relative-to="$(pwd)" "$CONFIG_FILE" 2>/dev/null)"
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		""|"help"|"--help"|"-help"|"-h")
-			echo "Usage: $0 [config]"
-			echo "Starts the gentoo configurator. If no file is given, it defaults to 'gentoo.conf'."
-			echo "If the file doesn't exist, the configurator loads default values, otherwise, the"
-			echo "the configuration is loaded into the configurator."
+			echo "用法: $0 [config]"
+			echo "啟動 Gentoo 配置器。若未提供文件名，將預設為 'gentoo.conf' 。"
+			echo "若文件不存在，配置器將加載預設值，否則，"
+			echo "該配置將加載入配置器。"
 			exit 0
 			;;
 	esac
@@ -48,8 +48,8 @@ check_wanted_programs dialog ncurses=ncursesw6-config
 # Determine whether EFI is available
 HAS_EFI_SUPPORT=$([[ -d /sys/firmware/efi ]] && echo -n "true" || echo -n "false")
 DEFAULT_BOOT_TYPE=$([[ $HAS_EFI_SUPPORT == true ]] && echo -n "efi" || echo -n "bios")
-EFI_UNSUPPORTED_MESSAGE_SHORT="Missing EFI support on this system!"
-EFI_UNSUPPORTED_MESSAGE="Apparently, your system does NOT support efi. Double-check before proceeding!"
+EFI_UNSUPPORTED_MESSAGE_SHORT="該系統不支援 EFI ！"
+EFI_UNSUPPORTED_MESSAGE="你的系統似乎不支援 EFI。請在繼續前進行再度檢查！"
 
 # Wrap dialog in two functions to prevent it from cluttering stderr.
 function dialog_wrapper() { dialog_out=$(command dialog --colors "$@" 3>&2 2>&1 1>&3 3>&-); }
@@ -181,32 +181,32 @@ function define_disk_layout() {
 ALL_GENTOO_ARCHS=("x86" "amd64" "arm" "arm64")
 ALL_GENTOO_SUBARCHS=("i486" "i686")
 ALL_STAGE3_VARIANTS=(
-	"openrc"                   "openrc                  | Minimal OpenRC base (recommended)"
-	"openrc-splitusr"          "openrc-splitusr         | Minimal OpenRC base with a split-usr filesystem layout"
-	"desktop-openrc"           "openrc-desktop          | OpenRC, desktop profile, might have blockers"
-	"systemd"                  "systemd                 | Minimal systemd base (recommended)"
-	"desktop-systemd"          "systemd-desktop         | systemd, desktop profile, might have blockers"
-	"nomultilib-openrc"        "nomultilib-openrc       | Minimal OpenRC base without 32bits support (Experimental)"
-	"nomultilib-systemd"       "nomultilib-systemd      | Minimal systemd base without 32bits support (Experimental)"
-	"x32-openrc"               "x32-openrc              | Minimal OpenRC base without 64bits support (Experimental)"
-	"x32-systemd"              "x32-systemd             | Minimal systemd base without 64bits support (Experimental)"
-	"llvm-openrc"              "llvm-openrc             | Minimal OpenRC base compiled with LLVM (Experimental)"
-	"llvm-systemd"             "llvm-systemd            | Minimal systemd base compiled with LLVM (Experimental)"
-	"hardened-openrc"          "hardened-openrc         | Hardened OpenRC base (Experimental)"
-	"hardened-selinux-openrc"  "hardened-selinux-openrc | Hardened OpenRC base with SELinux (Experimental)"
-	"musl"                     "musl-openrc             | Minimal OpenRC base using musl (Experimental)"
-	"musl-llvm"                "musl-llvm-openrc        | Minimal OpenRC base using musl compiled with LLVM (Experimental)"
-	"musl-hardened"            "musl-hardened-openrc    | Hardened OpenRC base using musl (Experimental)"
+	"openrc"                   "openrc                  | 最小的 OpenRC 基礎包（建議）"
+	"openrc-splitusr"          "openrc-splitusr         | 具有 split-usr 文件系統佈局的 OpenRC 基礎包"
+	"desktop-openrc"           "openrc-desktop          | OpenRC ，桌面設定檔，或存在衝突"
+	"systemd"                  "systemd                 | 最小的 systemd 基礎包（建議）"
+	"desktop-systemd"          "systemd-desktop         | systemd ，桌面設定檔，或存在衝突"
+	"nomultilib-openrc"        "nomultilib-openrc       | 最小的無32位支援的 OpenRC 基礎包（實驗性）"
+	"nomultilib-systemd"       "nomultilib-systemd      | 最小的無32位支援的 systemd 基礎包（實驗性）"
+	"x32-openrc"               "x32-openrc              | 最小的無64位支援的 OpenRC 基礎包（實驗性）"
+	"x32-systemd"              "x32-systemd             | 最小的無64位支援的 systemd 基礎包（實驗性）"
+	"llvm-openrc"              "llvm-openrc             | 最小的以 LLVM 編譯的 OpenRC 基礎包（實驗性）"
+	"llvm-systemd"             "llvm-systemd            | 最小的以 LLVM 編譯的 systemd 基礎包（實驗性）"
+	"hardened-openrc"          "hardened-openrc         | 加固的 OpenRC 基礎包（實驗性）"
+	"hardened-selinux-openrc"  "hardened-selinux-openrc | 帶 SELinux 的（安全）加固的 OpenRC 基礎包（實驗性）"
+	"musl"                     "musl-openrc             | 最小的使用 musl 的 OpenRC 基礎包（實驗性）"
+	"musl-llvm"                "musl-llvm-openrc        | 最小的以 LLVM 編譯的使用 musl 的 OpenRC 基礎包（實驗性）"
+	"musl-hardened"            "musl-hardened-openrc    | 加固的使用 musl 的 OpenRC 基礎包（實驗性）"
 )
 
 ALL_PARTITIONING_SCHEMES=(
-	"classic_single_disk" "Classic single disk layout (boot/efi, swap?, root)"
-	"existing_partitions" "Skip partitioning, use existing pre-formatted partitions"
-	"zfs_centric"         "ZFS centric (optional ZFS compression and encryption)"
-	"btrfs_centric"       "Btrfs centric (optional raid0/1 via btrfs)"
-	"raid0_luks"          "Raid0 (N>=2 disks) and luks for root"
-	"raid1_luks"          "Raid1 (N>=2 disks) and luks for root"
-	"custom"              "Custom (expert option; edit the config manually later)"
+	"classic_single_disk" "經典單硬碟佈局 (boot/efi, swap?, root)"
+	"existing_partitions" "跳過分區步驟，使用現有的已格式化的分區"
+	"zfs_centric"         "以 ZFS 為中心 (可選用 ZFS 壓縮及加密)"
+	"btrfs_centric"       "以 Btrfs 為中心 (可以 btrfs 選用 raid0/1)"
+	"raid0_luks"          "根目錄使用 Raid0 (N>=2 disks) 及 luks"
+	"raid1_luks"          "根目錄使用 Raid1 (N>=2 disks) 及 luks"
+	"custom"              "自定義 (專家選項；過後手動修改該配置)"
 )
 
 PARTITIONING_BOOT_TYPES=(
@@ -220,8 +220,8 @@ PARTITIONING_ZFS_COMPRESSIONS=("on" "gzip" "lz4" "lzjb" "zle" "zstd" "zstd-fast"
 
 PORTAGE_SYNC_TYPES=("git" "rsync")
 KERNEL_TYPES=(
-	"bin"    "bin    | Pre-built binary kernel (gentoo-kernel-bin)"
-	"source" "source | Build kernel from source (gentoo-kernel)"
+	"bin"    "bin    | 預建的二進制內核 (gentoo-kernel-bin)"
+	"source" "source | 從原始碼構建內核 (gentoo-kernel)"
 )
 
 function create_single_disk_layout() {
@@ -397,7 +397,7 @@ function load_config() {
 
 	# Load settings
 	# shellcheck disable=SC1090
-	source "$1" || die "Could not load given configuration."
+	source "$1" || die "無法加載所提供之配置。"
 
 	# After loading a config, no unsaved changes exist.
 	UNSAVED_CHANGES=false
@@ -552,7 +552,7 @@ function menu_splitlist() {
 	# Show selection dialog
 	dialog \
 		--title "$title" \
-		--buildlist "$description\nUse ^ to focus the list of unselected items and $ to focus the list of selected items. Use <Space> to select/deselect an item and select <OK> by pressing <Enter> when finished." \
+		--buildlist "$description\n用 ^ 以聚焦於未選內容，用 $ 以聚焦於已選內容。用 <Space> 以 選擇/取消選擇一欄並在完成時通過按下 <Enter> 選擇 <OK> 。" \
 		"${BUILDLIST_SIZE[@]}" "${items[@]}"
 
 	local diag_exit=$?
@@ -604,7 +604,7 @@ function menu_radiolist_labeled() {
 		--ok-label "OK" \
 		--default-item "$default_item" \
 		--default-button help \
-		--radiolist "$description\nUse <Select> to select the option under the cursor, or <OK> to use the option which is selected with an asterisk." \
+		--radiolist "$description\n用 <Select> 選擇指標下的選項，或 <OK> 以使用已用星號標記的選項。" \
 		"${RADIOLIST_SIZE[@]}" "${items[@]}"
 
 	local diag_exit=$?
@@ -658,7 +658,7 @@ function menu_radiolist() {
 		--ok-label "OK" \
 		--default-item "$default_item" \
 		--default-button help \
-		--radiolist "$description\nUse <Select> to select the option under the cursor, or <OK> to use the option which is selected with an asterisk." \
+		--radiolist "$description\n用 <Select> 選擇指標下的選項，或 <OK> 以使用已用星號標記的選項。" \
 		"${RADIOLIST_SIZE[@]}" "${items[@]}"
 
 	local diag_exit="$?"
@@ -702,7 +702,7 @@ function menu_select_device() {
 				while true; do
 					if dialog \
 						--title "$1" \
-						--inputbox "$([[ -e $prev_selected ]] || echo -n "\Z1The previously selected device $prev_selected does not exist!\Zn ")Enter the path of the desired device." \
+						--inputbox "$([[ -e $prev_selected ]] || echo -n "\Z1先前選擇的設備 $prev_selected 不存在\Zn ")輸入設備路徑." \
 						"${INPUTBOX_SIZE[@]}" "$prev_selected"
 					then
 						# Repeat until selected device exists or cancelled
@@ -736,7 +736,7 @@ function menu_exit() {
 		dialog \
 			--help-button --help-label "Back" \
 			--yes-label "Save" --no-label "Discard" \
-			--yesno "Do you want to save your configuration?\n(Press <ESC><ESC>, or choose <Back> to continue gentoo configuration)." \
+			--yesno "是否儲存該配置？\n（按下 <ESC><ESC> ， 或選擇 <Back> 以繼續進行 Gentoo 配置）" \
 			"${CONFIRM_SIZE[@]}"
 
 		local diag_exit="$?"
@@ -759,8 +759,8 @@ function menu_exit() {
 
 function menu_save_as() {
 	dialog \
-		--ok-label "Save" \
-		--inputbox "Enter a filename to which this configuration should be saved.\n(Press <ESC><ESC>, or choose <Cancel> to abort)." \
+		--ok-label "儲存" \
+		--inputbox "輸入該配置將儲存為之文件名。\n(按下 <ESC><ESC>, 或選擇 <Cancel> 以中止)." \
 		"${INPUTBOX_SIZE[@]}" "$SAVE_AS_FILENAME"
 
 	local diag_exit="$?"
@@ -797,7 +797,7 @@ function menu() {
 		--help-button \
 		--default-item "$SELECTED_MENU_ITEM" \
 		--ok-label "Select" --cancel-label "Save" \
-		--menu "This is the gentoo configuration menu. Read and adjust all options below carefully. Save your desired configuration and run ./install afterwards. Use <Help> if you want further information on any option." \
+		--menu "此為 Gentoo 配置菜單。 仔細閱讀並調整以下所有選項。儲存閣下之配置並在之後運行. 若需更多資訊，請使用 <Help> 。" \
 		"${MENU_SIZE[@]}" "${tag_item_list[@]}"
 
 	local diag_exit="$?"
@@ -907,17 +907,17 @@ MENU_ITEMS=(
 function --------_tag()   { echo "────────────────────────────"; }
 function --------_label() { echo "────────────────────────────"; }
 function --------_show()  { return 0; }
-function --------_help()  { echo "Congratulations, you found a separator."; }
+function --------_help()  { echo "恭喜！閣下找到了一個分隔符。"; }
 function --------_menu()  { true; }
 
-function PARTITIONING_SCHEME_tag()   { echo "Partitioning scheme"; }
+function PARTITIONING_SCHEME_tag()   { echo "分區方案"; }
 function PARTITIONING_SCHEME_label() { echo "($PARTITIONING_SCHEME)"; }
 function PARTITIONING_SCHEME_show()  { return 0; }
-function PARTITIONING_SCHEME_help()  { echo "Select the desired partitioning scheme."; }
+function PARTITIONING_SCHEME_help()  { echo "選擇所欲使用之分區方案。"; }
 function PARTITIONING_SCHEME_menu()  {
 	if menu_radiolist_labeled \
-		"Select partitioning scheme" \
-		"Select which partitioning scheme you want to follow. Have a look at the help text for this option (available in the menu) for more details.\n\nAll options support EFI/BIOS, swap and some form of encryption (luks/zfs).\n" \
+		"選擇分區方案" \
+		"選擇所欲使用之分區方案。 請閱讀該選項之幫助文本（可見於菜單）以獲取更多細節。\n\n所有選項均支援 EFI/BIOS, swap 以及部分形式之加密 (luks/zfs).\n" \
 		"$PARTITIONING_SCHEME" \
 		"${ALL_PARTITIONING_SCHEMES[@]}"
 	then
@@ -941,11 +941,11 @@ function PARTITIONING_SCHEME_menu()  {
 function PARTITIONING_BOOT_TYPE_tag()   { echo " ├ Boot type"; }
 function PARTITIONING_BOOT_TYPE_label() { echo " ├ ($PARTITIONING_BOOT_TYPE)$([[ $PARTITIONING_BOOT_TYPE == efi && $HAS_EFI_SUPPORT == false ]] && echo -n " \Z1$EFI_UNSUPPORTED_MESSAGE_SHORT\Zn" || echo -n "")"; }
 function PARTITIONING_BOOT_TYPE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]]; }
-function PARTITIONING_BOOT_TYPE_help()  { echo "Select whether to use EFI or BIOS boot."; }
+function PARTITIONING_BOOT_TYPE_help()  { echo "選擇使用 EFI 或 BIOS 引導"; }
 function PARTITIONING_BOOT_TYPE_menu()  {
 	if menu_radiolist_labeled \
-		"Select boot type" \
-		"Select whether you want to use EFI or BIOS boot.$(on_off_str "$HAS_EFI_SUPPORT" "" " \Z1$EFI_UNSUPPORTED_MESSAGE\Zn")" \
+		"選擇引導類型" \
+		"選擇使用 EFI 或 BIOS 引導。$(on_off_str "$HAS_EFI_SUPPORT" "" " \Z1$EFI_UNSUPPORTED_MESSAGE\Zn")" \
 		"$PARTITIONING_BOOT_TYPE" \
 		"${PARTITIONING_BOOT_TYPES[@]}"
 	then
@@ -957,7 +957,7 @@ function PARTITIONING_BOOT_TYPE_menu()  {
 	fi
 }
 
-function PARTITIONING_BOOT_DEVICE_tag()   { echo " ├ Boot Device"; }
+function PARTITIONING_BOOT_DEVICE_tag()   { echo " ├ 引導設備"; }
 function PARTITIONING_BOOT_DEVICE_label() {
 	local devshort=$PARTITIONING_BOOT_DEVICE
 	devshort=$(shorten_device "$devshort")
@@ -968,11 +968,11 @@ function PARTITIONING_BOOT_DEVICE_label() {
 	fi
 }
 function PARTITIONING_BOOT_DEVICE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "existing_partitions"; }
-function PARTITIONING_BOOT_DEVICE_help()  { echo "The device to use for the boot partition. For EFI systems this is the efi partition. Must be formatted already."; }
+function PARTITIONING_BOOT_DEVICE_help()  { echo "作為引導分區之設備。對於 EFI 系統，即 efi 分區，須已格式化。"; }
 function PARTITIONING_BOOT_DEVICE_menu()  {
 	if menu_select_device \
-		"Select boot device" \
-		"Select the device containing the EFI filesystem or /boot partition respectively for systems using efi or bios boot." \
+		"選擇引導設備" \
+		"選擇包含 EFI 文件系統之設備或 /boot 分區（分別對於使用 efi 或 bios 引導之系統）" \
 		"$PARTITIONING_BOOT_DEVICE"
 	then
 		PARTITIONING_BOOT_DEVICE="$dialog_out"
@@ -983,23 +983,23 @@ function PARTITIONING_BOOT_DEVICE_menu()  {
 	fi
 }
 
-function PARTITIONING_USE_SWAP_tag()   { echo " ├ Use swap"; }
+function PARTITIONING_USE_SWAP_tag()   { echo " ├ 使用 swap"; }
 function PARTITIONING_USE_SWAP_label() { on_off_label "$PARTITIONING_USE_SWAP" " ├ "; }
 function PARTITIONING_USE_SWAP_show()  { [[ $PARTITIONING_SCHEME != "custom" ]]; }
-function PARTITIONING_USE_SWAP_help()  { echo "Select whether or not to create a swap partition."; }
+function PARTITIONING_USE_SWAP_help()  { echo "選擇是否創建 swap 分區"; }
 function PARTITIONING_USE_SWAP_menu()  {
 	on_off_toggle "PARTITIONING_USE_SWAP"
 	UNSAVED_CHANGES=true
 }
 
-function PARTITIONING_SWAP_tag()   { echo " │  └ Swap amount"; }
+function PARTITIONING_SWAP_tag()   { echo " │  └ Swap 空間大小"; }
 function PARTITIONING_SWAP_label() { echo " │  └ ($PARTITIONING_SWAP)"; }
 function PARTITIONING_SWAP_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && is_on "$PARTITIONING_USE_SWAP" && ! one_of "$PARTITIONING_SCHEME" "existing_partitions"; }
-function PARTITIONING_SWAP_help()  { echo "Select the amount of swap to use."; }
+function PARTITIONING_SWAP_help()  { echo "Select the amount of swap to use.選擇使用的 swap 空間大小"; }
 function PARTITIONING_SWAP_menu()  {
 	dialog \
-		--title "Select swap amount" \
-		--inputbox "Enter the amount of swap for the new system. Use the correct suffix (e.g. 16GiB, 1000MB)." \
+		--title "選擇 swap 空間大小" \
+		--inputbox "輸入新系統的 swap 空間大小。使用恰當的後綴（例如 16GiB, 1000MB）" \
 		"${INPUTBOX_SIZE[@]}" "$PARTITIONING_SWAP" \
 		|| return 0
 	PARTITIONING_SWAP="$dialog_out"
@@ -1007,7 +1007,7 @@ function PARTITIONING_SWAP_menu()  {
 }
 
 
-function PARTITIONING_SWAP_DEVICE_tag()   { echo " │  └ Swap Device"; }
+function PARTITIONING_SWAP_DEVICE_tag()   { echo " │  └ Swap 設備"; }
 function PARTITIONING_SWAP_DEVICE_label() {
 	local dev=${PARTITIONING_SWAP_DEVICE:-/dev/sdB}
 	local devshort
@@ -1019,11 +1019,11 @@ function PARTITIONING_SWAP_DEVICE_label() {
 	fi
 }
 function PARTITIONING_SWAP_DEVICE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && is_on "$PARTITIONING_USE_SWAP" && one_of "$PARTITIONING_SCHEME" "existing_partitions"; }
-function PARTITIONING_SWAP_DEVICE_help()  { echo "The device to use as swap."; }
+function PARTITIONING_SWAP_DEVICE_help()  { echo "用於 swap 之設備。"; }
 function PARTITIONING_SWAP_DEVICE_menu()  {
 	if menu_select_device \
-		"Select swap device" \
-		"Select the device to use as swap." \
+		"選擇 swap 設備" \
+		"選擇將用作 swap 的設備。" \
 		"$PARTITIONING_SWAP_DEVICE"
 	then
 		PARTITIONING_SWAP_DEVICE="$dialog_out"
@@ -1034,14 +1034,14 @@ function PARTITIONING_SWAP_DEVICE_menu()  {
 	fi
 }
 
-function PARTITIONING_ROOT_FS_tag()   { echo " ├ Root filesystem"; }
+function PARTITIONING_ROOT_FS_tag()   { echo " ├ 根文件系統"; }
 function PARTITIONING_ROOT_FS_label() { echo " ├ ($PARTITIONING_ROOT_FS)"; }
 function PARTITIONING_ROOT_FS_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "classic_single_disk" "raid0_luks" "raid1_luks"; }
-function PARTITIONING_ROOT_FS_help()  { echo "Select the amount of swap to use."; }
+function PARTITIONING_ROOT_FS_help()  { echo "選擇將使用之 swap 空間大小"; }
 function PARTITIONING_ROOT_FS_menu()  {
 	if menu_radiolist \
-		"Select root fstype" \
-		"Select which filesystem to use on the root partition." \
+		"選擇根文件系統類型" \
+		"選擇根分區所使用之文件系統" \
 		"$PARTITIONING_ROOT_FS" \
 		"${PARTITIONING_ROOT_FS_TYPES[@]}"
 	then
@@ -1053,19 +1053,19 @@ function PARTITIONING_ROOT_FS_menu()  {
 	fi
 }
 
-function PARTITIONING_USE_LUKS_tag()   { echo " ├ LUKS Encryption"; }
+function PARTITIONING_USE_LUKS_tag()   { echo " ├ LUKS 加密"; }
 function PARTITIONING_USE_LUKS_label() { on_off_label "$PARTITIONING_USE_LUKS" " ├ "; }
 function PARTITIONING_USE_LUKS_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "classic_single_disk" "btrfs_centric" "raid0_luks" "raid1_luks"; }
-function PARTITIONING_USE_LUKS_help()  { echo "Determines if LUKS will be used to encrypt your root partition. You can export the desired encryption key via export GENTOO_INSTALL_ENCRYPTION_KEY='...' before installing if you don't want to be asked."; }
+function PARTITIONING_USE_LUKS_help()  { echo "決定是否使用 LUKS 加密根分區。若不想被問，可通過 export GENTOO_INSTALL_ENCRYPTION_KEY='...' 在安裝前導出加密金鑰。"; }
 function PARTITIONING_USE_LUKS_menu()  {
 	on_off_toggle "PARTITIONING_USE_LUKS"
 	UNSAVED_CHANGES=true
 }
 
-function PARTITIONING_ZFS_USE_ENCRYPTION_tag()   { echo " ├ ZFS Encryption"; }
+function PARTITIONING_ZFS_USE_ENCRYPTION_tag()   { echo " ├ ZFS 加密"; }
 function PARTITIONING_ZFS_USE_ENCRYPTION_label() { on_off_label "$PARTITIONING_ZFS_USE_ENCRYPTION" " ├ "; }
 function PARTITIONING_ZFS_USE_ENCRYPTION_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "zfs_centric" && one_of "$PARTITIONING_ZFS_POOL_TYPE" "standard"; }
-function PARTITIONING_ZFS_USE_ENCRYPTION_help()  { echo "Determines if ZFS encryption will be used to encrypt your root partition. You can export the desired encryption key via export GENTOO_INSTALL_ENCRYPTION_KEY='...' before installing if you don't want to be asked."; }
+function PARTITIONING_ZFS_USE_ENCRYPTION_help()  { echo "決定是否使用 ZFS 加密根分區。 可通過 export GENTOO_INSTALL_ENCRYPTION_KEY='...' 在安裝前導出加密金鑰。"; }
 function PARTITIONING_ZFS_USE_ENCRYPTION_menu()  {
 	on_off_toggle "PARTITIONING_ZFS_USE_ENCRYPTION"
 	UNSAVED_CHANGES=true
@@ -1074,23 +1074,23 @@ function PARTITIONING_ZFS_USE_ENCRYPTION_menu()  {
 # TODO keylocation prompt | file
 # TODO if loc is file, another checkbox to "autogenerate and save new key" openssl rand -hex 32 > file
 
-function PARTITIONING_ZFS_USE_COMPRESSION_tag()   { echo " ├ Use ZFS Compression"; }
+function PARTITIONING_ZFS_USE_COMPRESSION_tag()   { echo " ├ 使用 ZFS 壓縮"; }
 function PARTITIONING_ZFS_USE_COMPRESSION_label() { on_off_label "$PARTITIONING_ZFS_USE_COMPRESSION" " ├ "; }
 function PARTITIONING_ZFS_USE_COMPRESSION_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "zfs_centric" && one_of "$PARTITIONING_ZFS_POOL_TYPE" "standard"; }
-function PARTITIONING_ZFS_USE_COMPRESSION_help()  { echo "Determines if compression should be enabled on the ZFS datasets."; }
+function PARTITIONING_ZFS_USE_COMPRESSION_help()  { echo "決定是否在 ZFS 數據集中啟用壓縮。"; }
 function PARTITIONING_ZFS_USE_COMPRESSION_menu()  {
 	on_off_toggle "PARTITIONING_ZFS_USE_COMPRESSION"
 	UNSAVED_CHANGES=true
 }
 
-function PARTITIONING_ZFS_COMPRESSION_tag()   { echo " │  └ Compression algorithm"; }
+function PARTITIONING_ZFS_COMPRESSION_tag()   { echo " │  └ 壓縮算法"; }
 function PARTITIONING_ZFS_COMPRESSION_label() { echo " │  └ ($PARTITIONING_ZFS_COMPRESSION)"; }
 function PARTITIONING_ZFS_COMPRESSION_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "zfs_centric" && one_of "$PARTITIONING_ZFS_POOL_TYPE" "standard" && is_on "$PARTITIONING_ZFS_USE_COMPRESSION"; }
-function PARTITIONING_ZFS_COMPRESSION_help()  { echo "Determines the compression algorithm used on the ZFS datasets. 'on' means to use the default compression algorithm determined by ZFS. If you need more granular control over the specific levels such as gzip-N or zstd-N, please use a custom pool."; }
+function PARTITIONING_ZFS_COMPRESSION_help()  { echo "決定將用於 ZFS 數據集之壓縮算法. 'on' 表示將使用由 ZFS 決定之預設壓縮算法。 若需更細緻之級別控制（如 gzip-N 或 zstd-N ）請使用自定義池。"; }
 function PARTITIONING_ZFS_COMPRESSION_menu()  {
 	if menu_radiolist \
-		"Select ZFS compression algorithm" \
-		"Determines the compression algorithm used on the ZFS datasets. The special value 'on' means to use the default compression algorithm as determined by ZFS." \
+		"選擇 ZFS 壓縮算法" \
+		"決定將用於 ZFS 數據集之壓縮算法. 'on' 表示將使用由 ZFS 決定之預設壓縮算法。" \
 		"$PARTITIONING_ZFS_COMPRESSION" \
 		"${PARTITIONING_ZFS_COMPRESSIONS[@]}"
 	then
@@ -1102,14 +1102,14 @@ function PARTITIONING_ZFS_COMPRESSION_menu()  {
 	fi
 }
 
-function PARTITIONING_ZFS_POOL_TYPE_tag()   { echo " ├ Pool type"; }
+function PARTITIONING_ZFS_POOL_TYPE_tag()   { echo " ├ 池類型"; }
 function PARTITIONING_ZFS_POOL_TYPE_label() { echo " ├ ($PARTITIONING_ZFS_POOL_TYPE)"; }
 function PARTITIONING_ZFS_POOL_TYPE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "zfs_centric"; }
-function PARTITIONING_ZFS_POOL_TYPE_help()  { echo "Determines how the zfs pool will be initialized. Select 'standard' for a default pool setup that puts all given devices in one pool with ZSTD compression. Selecting 'custom' will require you to write your own pool creation function in the output config."; }
+function PARTITIONING_ZFS_POOL_TYPE_help()  { echo "決定 ZFS 池將如何初始化。 選擇 'standard' 以使用預設池佈局，將把全部所提供之設備加入至一個使用 ZSTD 壓縮的池. 若選擇 'custom' ，請在輸出之配置中寫下閣下建立池之方法。"; }
 function PARTITIONING_ZFS_POOL_TYPE_menu()  {
 	if menu_radiolist \
-		"Select ZFS pool type" \
-		"Select 'standard' for a default pool setup that puts all given devices in one pool with ZSTD compression. Selecting 'custom' will require you to write your own pool creation function in the output config." \
+		"選擇 ZFS 池類型" \
+		"選擇 'standard' 以使用預設池佈局，將把全部所提供之設備加入至一個使用 ZSTD 壓縮的池. 若選擇 'custom' ，請在輸出之配置中寫下閣下建立池之方法。" \
 		"$PARTITIONING_ZFS_POOL_TYPE" \
 		"${PARTITIONING_ZFS_POOL_TYPES[@]}"
 	then
@@ -1121,14 +1121,14 @@ function PARTITIONING_ZFS_POOL_TYPE_menu()  {
 	fi
 }
 
-function PARTITIONING_BTRFS_RAID_TYPE_tag()   { echo " ├ Btrfs raid type"; }
+function PARTITIONING_BTRFS_RAID_TYPE_tag()   { echo " ├ Btrfs raid 類型"; }
 function PARTITIONING_BTRFS_RAID_TYPE_label() { echo " ├ ($PARTITIONING_BTRFS_RAID_TYPE)"; }
 function PARTITIONING_BTRFS_RAID_TYPE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "btrfs_centric"; }
-function PARTITIONING_BTRFS_RAID_TYPE_help()  { echo "Determines the type of the btrfs pool."; }
+function PARTITIONING_BTRFS_RAID_TYPE_help()  { echo "決定 btrfs 池之類型。"; }
 function PARTITIONING_BTRFS_RAID_TYPE_menu()  {
 	if menu_radiolist \
-		"Select raid type" \
-		"Select which raid type to use for the btrfs pool." \
+		"選擇 raid 類型" \
+		"選擇將用於 btrfs 池之 raid 類型。" \
 		"$PARTITIONING_BTRFS_RAID_TYPE" \
 		"${PARTITIONING_BTRFS_RAID_TYPES[@]}"
 	then
@@ -1140,7 +1140,7 @@ function PARTITIONING_BTRFS_RAID_TYPE_menu()  {
 	fi
 }
 
-function PARTITIONING_DEVICE_tag()   { echo " └ Device"; }
+function PARTITIONING_DEVICE_tag()   { echo " └ 設備"; }
 function PARTITIONING_DEVICE_label() {
 	local devshort=$PARTITIONING_DEVICE
 	devshort=$(shorten_device "$devshort")
@@ -1151,11 +1151,11 @@ function PARTITIONING_DEVICE_label() {
 	fi
 }
 function PARTITIONING_DEVICE_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "classic_single_disk" "existing_partitions"; }
-function PARTITIONING_DEVICE_help()  { echo "The block device to which the layout will be applied."; }
+function PARTITIONING_DEVICE_help()  { echo "將應用該佈局之塊設備。"; }
 function PARTITIONING_DEVICE_menu()  {
 	if menu_select_device \
-		"Select root device" \
-		"Select the device to use as the root device." \
+		"選擇根設備" \
+		"選擇將作為根設備之設備。" \
 		"$PARTITIONING_DEVICE"
 	then
 		PARTITIONING_DEVICE="$dialog_out"
@@ -1166,7 +1166,7 @@ function PARTITIONING_DEVICE_menu()  {
 	fi
 }
 
-function PARTITIONING_DEVICES_tag()   { echo " └ Devices"; }
+function PARTITIONING_DEVICES_tag()   { echo " └ 設備"; }
 function PARTITIONING_DEVICES_label() {
 	local invalid=0
 	for dev in "${PARTITIONING_DEVICES[@]}"; do
@@ -1175,17 +1175,17 @@ function PARTITIONING_DEVICES_label() {
 	done
 
 	if [[ "$invalid" -gt 0 ]]; then
-		echo " └ (${#PARTITIONING_DEVICES[@]} devices, \Z1$invalid invalid\Zn)"
+		echo " └ (${#PARTITIONING_DEVICES[@]} 個設備, \Z1$invalid 無效\Zn)"
 	elif [[ "${#PARTITIONING_DEVICES[@]}" -eq 1 && ("$PARTITIONING_SCHEME" == "raid0_luks" || "$PARTITIONING_SCHEME" == "raid1_luks") ]]; then
-		echo " └ (${#PARTITIONING_DEVICES[@]} devices, \Z1need at least 2\Zn)"
+		echo " └ (${#PARTITIONING_DEVICES[@]} 個設備, \Z1需要至少2個\Zn)"
 	elif [[ "${#PARTITIONING_DEVICES[@]}" -eq 0 ]]; then
-		echo " └ (${#PARTITIONING_DEVICES[@]} devices, \Z1need at least 1\Zn)"
+		echo " └ (${#PARTITIONING_DEVICES[@]} 個設備, \Z1需要至少1個\Zn)"
 	else
-		echo " └ (${#PARTITIONING_DEVICES[@]} devices)"
+		echo " └ (${#PARTITIONING_DEVICES[@]} 個設備)"
 	fi
 }
 function PARTITIONING_DEVICES_show()  { [[ $PARTITIONING_SCHEME != "custom" ]] && one_of "$PARTITIONING_SCHEME" "raid0_luks" "raid1_luks" "zfs_centric" "btrfs_centric"; }
-function PARTITIONING_DEVICES_help()  { echo "The block devices to which the layout will be applied."; }
+function PARTITIONING_DEVICES_help()  { echo "將應用該佈局之塊設備。"; }
 function PARTITIONING_DEVICES_menu()  {
 	local invalid=()
 	for dev in "${PARTITIONING_DEVICES[@]}"; do
@@ -1195,40 +1195,40 @@ function PARTITIONING_DEVICES_menu()  {
 
 	local invalid_line=""
 	if [[ "${#invalid[@]}" -gt 0 ]]; then
-		invalid_line="\n\nInvalid devices: \Z1${invalid[*]}\Zn"
+		invalid_line="\n\n無效設備: \Z1${invalid[*]}\Zn"
 	fi
 
 	dialog \
-		--title "Select devices" \
-		--inputbox "Enter the path of all devices which you want to partition, separated by space. (e.g. /dev/sda /dev/sdb).$invalid_line" \
+		--title "選擇設備" \
+		--inputbox "輸入所需分區之全部設備，以空格分開。（例如 /dev/sda /dev/sdb ）$invalid_line" \
 		"${INPUTBOX_SIZE[@]}" "${PARTITIONING_DEVICES[*]}" \
 		|| return 0
 	read -ra PARTITIONING_DEVICES <<< "$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function HOSTNAME_tag()   { echo "Hostname"; }
+function HOSTNAME_tag()   { echo "主機名"; }
 function HOSTNAME_label() { echo "($HOSTNAME)"; }
 function HOSTNAME_show()  { return 0; }
-function HOSTNAME_help()  { echo "Enter the desired system hostname here. Be aware that when creating mdadm raid arrays, this value will be recorded in metadata block. If you change it later, you should also update the metadata."; }
+function HOSTNAME_help()  { echo "在此輸入主機名。注意創建 mdadm raid 陣列時，該值將被記錄於元數據塊。若在之後發生變更，閣下應同時更新元數據。"; }
 function HOSTNAME_menu()  {
 	dialog \
-		--title "Select hostname" \
-		--inputbox "Enter the hostname for your new system." \
+		--title "選擇主機名" \
+		--inputbox "為新系統輸入主機名" \
 		"${INPUTBOX_SIZE[@]}" "$HOSTNAME" \
 		|| return 0
 	HOSTNAME="$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function TIMEZONE_tag()   { echo "Timezone"; }
+function TIMEZONE_tag()   { echo "時區"; }
 function TIMEZONE_label() { echo "($TIMEZONE)"; }
 function TIMEZONE_show()  { return 0; }
-function TIMEZONE_help()  { echo "The timezone for the new system."; }
+function TIMEZONE_help()  { echo "新系統之時區"; }
 function TIMEZONE_menu()  {
 	if menu_radiolist \
-		"Select timezone" \
-		"Select which timezone to use." \
+		"選擇時區" \
+		"選擇所使用之時區" \
 		"$TIMEZONE" \
 		"${ALL_TIMEZONES[@]}"
 	then
@@ -1240,14 +1240,14 @@ function TIMEZONE_menu()  {
 	fi
 }
 
-function KEYMAP_tag()   { echo "Keymap"; }
+function KEYMAP_tag()   { echo "鍵盤佈局"; }
 function KEYMAP_label() { echo "($KEYMAP)"; }
 function KEYMAP_show()  { return 0; }
-function KEYMAP_help()  { echo "The default vconsole keymap for the system."; }
+function KEYMAP_help()  { echo "預設的系統終端鍵盤佈局。"; }
 function KEYMAP_menu()  {
 	if menu_radiolist \
-		"Select initramfs keymap" \
-		"Select which keymap to use in the vconsole." \
+		"選擇 initramfs 鍵盤佈局" \
+		"選擇將用於終端之鍵盤佈局。" \
 		"$KEYMAP" \
 		"${ALL_KEYMAPS[@]}"
 	then
@@ -1259,10 +1259,10 @@ function KEYMAP_menu()  {
 	fi
 }
 
-function KEYMAP_INITRAMFS_OTHER_tag()   { echo "Different initramfs keymap"; }
+function KEYMAP_INITRAMFS_OTHER_tag()   { echo "不同的 initramfs 鍵盤佈局"; }
 function KEYMAP_INITRAMFS_OTHER_label() { on_off_label "$KEYMAP_INITRAMFS_OTHER"; }
 function KEYMAP_INITRAMFS_OTHER_show()  { return 0; }
-function KEYMAP_INITRAMFS_OTHER_help()  { echo "Whether another keymap should be used for the initramfs. If enabled, you will be able to choose a separate keymap below."; }
+function KEYMAP_INITRAMFS_OTHER_help()  { echo "是否在 initramfs 中使用另外的鍵盤佈局。若啟用，可於下方選擇一個單獨的鍵盤佈局"; }
 function KEYMAP_INITRAMFS_OTHER_menu()  {
 	on_off_toggle "KEYMAP_INITRAMFS_OTHER"
 	UNSAVED_CHANGES=true
@@ -1270,14 +1270,14 @@ function KEYMAP_INITRAMFS_OTHER_menu()  {
 		&& KEYMAP_INITRAMFS="$KEYMAP"
 }
 
-function KEYMAP_INITRAMFS_tag()   { echo " └ Keymap (initramfs)"; }
+function KEYMAP_INITRAMFS_tag()   { echo " └ 鍵盤佈局 (initramfs)"; }
 function KEYMAP_INITRAMFS_label() { echo " └ ($KEYMAP_INITRAMFS)"; }
 function KEYMAP_INITRAMFS_show()  { is_on "$KEYMAP_INITRAMFS_OTHER"; }
-function KEYMAP_INITRAMFS_help()  { echo "The default vconsole keymap for the initrams. This is important if need to unlock an encrypted partition when booting."; }
+function KEYMAP_INITRAMFS_help()  { echo "initramfs 中的預設終端鍵盤佈局。若需於引導時解鎖加密分區，該選項將非常重要。"; }
 function KEYMAP_INITRAMFS_menu()  {
 	if menu_radiolist \
-		"Select initramfs keymap" \
-		"Select which keymap to use in the initramfs vconsole." \
+		"選擇 initramfs 佈局" \
+		"選擇將用於 initramfs 終端之鍵盤佈局。" \
 		"$KEYMAP_INITRAMFS" \
 		"${ALL_KEYMAPS[@]}"
 	then
@@ -1289,12 +1289,12 @@ function KEYMAP_INITRAMFS_menu()  {
 	fi
 }
 
-function LOCALES_tag()   { echo "Locales"; }
+function LOCALES_tag()   { echo "地區"; }
 function LOCALES_label() { echo "$N_LOCALES selected"; }
 function LOCALES_show()  { return 0; }
-function LOCALES_help()  { echo "The locales to generate for the new system. Be careful that the syntax for locales is a different from the resulting name of the generated locales of locale-gen. For example, the locale 'en_US.utf8' is enabled via 'en_US.UTF-8 UTF-8')."; }
+function LOCALES_help()  { echo "於新系統將生成之地區設定。注意其語法與已由 locale-gen 生成之地區設定不同。例如 'en_US.utf8' 由 'en_US.UTF-8 UTF-8' 啟用。"; }
 function LOCALES_menu()  {
-	if menu_splitlist "Select locales" "Select which locales to generate." "$SELECTED_LOCALES" "${SUPPORTED_LOCALES[@]}"; then
+	if menu_splitlist "選擇地區" "選擇將生成之地區設定。" "$SELECTED_LOCALES" "${SUPPORTED_LOCALES[@]}"; then
 		SELECTED_LOCALES="$dialog_out"
 		recalculate_locales
 		UNSAVED_CHANGES=true
@@ -1304,14 +1304,14 @@ function LOCALES_menu()  {
 	fi
 }
 
-function LOCALE_tag()   { echo "Default locale"; }
+function LOCALE_tag()   { echo "預設地區"; }
 function LOCALE_label() { echo "($LOCALE)"; }
 function LOCALE_show()  { return 0; }
-function LOCALE_help()  { echo "The locale to use for the new system. See \`locale -a\` for available options, and be sure to generate the locale by adding it to the list of locales above."; }
+function LOCALE_help()  { echo "將用於新系統之地區設定。 參見 \`locale -a\` 以獲取可用選項，將之加入上列地區設定列表以確保生成該區域設定。"; }
 function LOCALE_menu()  {
 	if menu_radiolist \
-		"Select default locale" \
-		"Select which locale to use as the default. Remember to also add the desired locale to the list of locales above." \
+		"選擇預設地區" \
+		"選擇將作為預設值之地區設定。記得將該地區設定加入上列地區設定列表。" \
 		"$LOCALE" \
 		"${LOCALE_A[@]}"
 	then
@@ -1323,55 +1323,55 @@ function LOCALE_menu()  {
 	fi
 }
 
-function SYSTEMD_NETWORKD_tag()   { echo "Configure network"; }
+function SYSTEMD_NETWORKD_tag()   { echo "配置網絡"; }
 function SYSTEMD_NETWORKD_label() { on_off_label "$SYSTEMD_NETWORKD"; }
 function SYSTEMD_NETWORKD_show()  { [[ $STAGE3_VARIANT == *systemd* ]]; }
-function SYSTEMD_NETWORKD_help()  { echo "Enable systemd-network to configure networking on the new system."; }
+function SYSTEMD_NETWORKD_help()  { echo "啟用 systemd-network 以在新系統中配置網絡"; }
 function SYSTEMD_NETWORKD_menu()  {
 	on_off_toggle "SYSTEMD_NETWORKD"
 	UNSAVED_CHANGES=true
 }
 
-function SYSTEMD_INITRAMFS_SSHD_tag()   { echo " ├ Enable sshd in initramfs"; }
+function SYSTEMD_INITRAMFS_SSHD_tag()   { echo " ├ 於 initramfs 中啟用 sshd"; }
 function SYSTEMD_INITRAMFS_SSHD_label() { on_off_label "$SYSTEMD_INITRAMFS_SSHD" " ├ "; }
 function SYSTEMD_INITRAMFS_SSHD_show()  { [[ $STAGE3_VARIANT == *systemd* ]] && is_on "$SYSTEMD_NETWORKD"; }
-function SYSTEMD_INITRAMFS_SSHD_help()  { echo "Install and enable sshd in the initramfs. This can be used to unlock encrypted partitions / ZFS via ssh, or to get an emergency shell. Visit https://github.com/gsauthof/dracut-sshd for more information."; }
+function SYSTEMD_INITRAMFS_SSHD_help()  { echo "於 initramfs 中安裝並啟用 sshd 。 可用於解鎖加密分區 / ZFS ，或連結緊急 shell 。參見 https://github.com/gsauthof/dracut-sshd 以獲取更多資訊。"; }
 function SYSTEMD_INITRAMFS_SSHD_menu()  {
 	on_off_toggle "SYSTEMD_INITRAMFS_SSHD"
 	UNSAVED_CHANGES=true
 }
 
-function SYSTEMD_NETWORKD_INTERFACE_NAME_tag()   { echo " ├ Interface Name"; }
+function SYSTEMD_NETWORKD_INTERFACE_NAME_tag()   { echo " ├ 接口名"; }
 function SYSTEMD_NETWORKD_INTERFACE_NAME_label() { echo " ├ ($(ellipsis 20 "$SYSTEMD_NETWORKD_INTERFACE_NAME"))"; }
 function SYSTEMD_NETWORKD_INTERFACE_NAME_show()  { [[ $STAGE3_VARIANT == *systemd* ]] && is_on "$SYSTEMD_NETWORKD"; }
-function SYSTEMD_NETWORKD_INTERFACE_NAME_help()  { echo "The network interface(s) to configure. Defaults to all interfaces matching en*."; }
+function SYSTEMD_NETWORKD_INTERFACE_NAME_help()  { echo "將配置之網絡接口。預設為所有符合 en* 之接口。"; }
 function SYSTEMD_NETWORKD_INTERFACE_NAME_menu()  {
 	dialog \
-		--title "Network Interface Name" \
-		--inputbox "Enter the network interface name which should be configured. Can include wildcards." \
+		--title "網絡接口名" \
+		--inputbox "輸入將配置之網絡接口名。可包含通配符。" \
 		"${INPUTBOX_SIZE[@]}" "$SYSTEMD_NETWORKD_INTERFACE_NAME" \
 		|| return 0
 	SYSTEMD_NETWORKD_INTERFACE_NAME="$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function SYSTEMD_NETWORKD_DHCP_tag()   { echo " └ Static IP"; }
+function SYSTEMD_NETWORKD_DHCP_tag()   { echo " └ 靜態 IP"; }
 function SYSTEMD_NETWORKD_DHCP_label() { on_off_label_inverted "$SYSTEMD_NETWORKD_DHCP" " └ "; }
 function SYSTEMD_NETWORKD_DHCP_show()  { [[ $STAGE3_VARIANT == *systemd* ]] && is_on "$SYSTEMD_NETWORKD"; }
-function SYSTEMD_NETWORKD_DHCP_help()  { echo "Use DHCP to obtain network configuration."; }
+function SYSTEMD_NETWORKD_DHCP_help()  { echo "使用 DHCP 以獲取網絡配置。"; }
 function SYSTEMD_NETWORKD_DHCP_menu()  {
 	on_off_toggle "SYSTEMD_NETWORKD_DHCP"
 	UNSAVED_CHANGES=true
 }
 
-function SYSTEMD_NETWORKD_ADDRESSES_tag()   { echo "   ├ Addresses"; }
+function SYSTEMD_NETWORKD_ADDRESSES_tag()   { echo "   ├ 位址"; }
 function SYSTEMD_NETWORKD_ADDRESSES_label() { echo "   ├ ($(ellipsis 20 "${SYSTEMD_NETWORKD_ADDRESSES[*]}"))"; }
 function SYSTEMD_NETWORKD_ADDRESSES_show()  { [[ $STAGE3_VARIANT == *systemd* ]] && is_on "$SYSTEMD_NETWORKD" && is_off "$SYSTEMD_NETWORKD_DHCP"; }
-function SYSTEMD_NETWORKD_ADDRESSES_help()  { echo "A space-separated list of addresses with CIDR mask to assign to the network interface."; }
+function SYSTEMD_NETWORKD_ADDRESSES_help()  { echo "分配給網絡接口的以空格分開的帶 CIDR 遮罩的位址。"; }
 function SYSTEMD_NETWORKD_ADDRESSES_menu()  {
 	dialog \
-		--title "Network Addresses" \
-		--inputbox "A space-separated list of addresses with CIDR mask to assign to the network interface." \
+		--title "網絡位址" \
+		--inputbox "分配給網絡接口的以空格分開的帶 CIDR 遮罩的位址" \
 		"${INPUTBOX_SIZE[@]}" "${SYSTEMD_NETWORKD_ADDRESSES[*]}" \
 		|| return 0
 	# shellcheck disable=SC2206
@@ -1379,28 +1379,28 @@ function SYSTEMD_NETWORKD_ADDRESSES_menu()  {
 	UNSAVED_CHANGES=true
 }
 
-function SYSTEMD_NETWORKD_GATEWAY_tag()   { echo "   └ Gateway"; }
+function SYSTEMD_NETWORKD_GATEWAY_tag()   { echo "   └ 網關"; }
 function SYSTEMD_NETWORKD_GATEWAY_label() { echo "   └ ($(ellipsis 20 "$SYSTEMD_NETWORKD_GATEWAY"))"; }
 function SYSTEMD_NETWORKD_GATEWAY_show()  { [[ $STAGE3_VARIANT == *systemd* ]] && is_on "$SYSTEMD_NETWORKD" && is_off "$SYSTEMD_NETWORKD_DHCP"; }
-function SYSTEMD_NETWORKD_GATEWAY_help()  { echo "The gateway address for the network."; }
+function SYSTEMD_NETWORKD_GATEWAY_help()  { echo "該網絡之網關位址。"; }
 function SYSTEMD_NETWORKD_GATEWAY_menu()  {
 	dialog \
-		--title "Network Gateway" \
-		--inputbox "The gateway address for the network." \
+		--title "網關" \
+		--inputbox "該網絡之網關地位址" \
 		"${INPUTBOX_SIZE[@]}" "$SYSTEMD_NETWORKD_GATEWAY" \
 		|| return 0
 	SYSTEMD_NETWORKD_GATEWAY="$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function STAGE3_VARIANT_tag()   { echo "Stage3 variant & Init system"; }
+function STAGE3_VARIANT_tag()   { echo "Stage3 類型 & 初始化系統"; }
 function STAGE3_VARIANT_label() { echo "($STAGE3_VARIANT)"; }
 function STAGE3_VARIANT_show()  { return 0; }
-function STAGE3_VARIANT_help()  { echo "Select which stage3 tarball to use. Implicitly determines whether systemd or OpenRC is used. Not all stage3 variants have been tested with this installer. The basic installation process is always the same, but due to complex profiles, unexpected blockers may arise when emerge is called. Stick to the basic choices and change after bootstrapping, unless you know how to intervene while installing."; }
+function STAGE3_VARIANT_help()  { echo "選擇要使用的 stage3 檔。其中決定了使用 systemd 或 OpenRC 。並非此安裝器中所有類型的 stage3 均經過試驗. 基礎的安裝過程總是一樣的，但鑑於設定檔複雜， emerge 被調用時或將出現預料外之阻礙。除非閣下知曉如何於安裝過程中進行干預，否則請先使用最基礎的選項，並於安裝完畢後再作變更。"; }
 function STAGE3_VARIANT_menu()  {
 	if menu_radiolist_labeled \
-		"Select stage3 variant" \
-		"Select the base stage3 tarball variant to use for bootstrapping the system. Implicitly determines whether systemd or OpenRC is used. Not all stage3 variants have been tested with this installer. The basic installation process is always the same, but due to complex profiles, unexpected blockers may arise when emerge is called. Stick to the basic choices and change after bootstrapping, unless you know how to intervene while installing." \
+		"選擇 stage3 類型" \
+		"選擇要使用的 stage3 檔。其中決定了使用 systemd 或 OpenRC 。並非此安裝器中所有類型的 stage3 均經過試驗. 基礎的安裝過程總是一樣的，但鑑於設定檔複雜， emerge 被調用時或將出現預料外之阻礙。除非閣下知曉如何於安裝過程中進行干預，否則請先使用最基礎的選項，並於安裝完畢後再作變更。" \
 		"$STAGE3_VARIANT" \
 		"${ALL_STAGE3_VARIANTS[@]}"
 	then
@@ -1412,14 +1412,14 @@ function STAGE3_VARIANT_menu()  {
 	fi
 }
 
-function PORTAGE_SYNC_TYPE_tag()   { echo "Portage tree sync-type"; }
+function PORTAGE_SYNC_TYPE_tag()   { echo "Portage 樹同步類型"; }
 function PORTAGE_SYNC_TYPE_label() { echo "($PORTAGE_SYNC_TYPE)"; }
 function PORTAGE_SYNC_TYPE_show()  { return 0; }
-function PORTAGE_SYNC_TYPE_help()  { echo "The portage tree sync-type."; }
+function PORTAGE_SYNC_TYPE_help()  { echo "portage 樹的同步類型"; }
 function PORTAGE_SYNC_TYPE_menu()  {
 	if menu_radiolist \
-		"Select sync-type" \
-		"Select the portage tree sync-type. Git is generally preferred for modern system installations." \
+		"選擇同步類型" \
+		"選擇 portage 樹的同步類型。通常建議在現代系統安裝中使用 Git 。" \
 		"$PORTAGE_SYNC_TYPE" \
 		"${PORTAGE_SYNC_TYPES[@]}"
 	then
@@ -1431,51 +1431,51 @@ function PORTAGE_SYNC_TYPE_menu()  {
 	fi
 }
 
-function PORTAGE_GIT_FULL_HISTORY_tag()   { echo " ├ Download full history"; }
+function PORTAGE_GIT_FULL_HISTORY_tag()   { echo " ├ 下載完整歷史"; }
 function PORTAGE_GIT_FULL_HISTORY_label() { on_off_label "$PORTAGE_GIT_FULL_HISTORY" " ├ "; }
 function PORTAGE_GIT_FULL_HISTORY_show()  { one_of "$PORTAGE_SYNC_TYPE" "git"; }
-function PORTAGE_GIT_FULL_HISTORY_help()  { echo "Determines if the full git history of the portage tree will be downloaded. This can easily take up 1-2GB of disk space."; }
+function PORTAGE_GIT_FULL_HISTORY_help()  { echo "決定是否下載 portage 樹的完整 git 歷史。這很可能需要佔用1-2GB的儲存空間。"; }
 function PORTAGE_GIT_FULL_HISTORY_menu()  {
 	on_off_toggle "PORTAGE_GIT_FULL_HISTORY"
 	UNSAVED_CHANGES=true
 }
 
-function PORTAGE_GIT_MIRROR_tag()   { echo " └ Git mirror"; }
+function PORTAGE_GIT_MIRROR_tag()   { echo " └ Git 鏡像"; }
 function PORTAGE_GIT_MIRROR_label() { echo " └ ($(ellipsis 20 "$PORTAGE_GIT_MIRROR"))"; }
 function PORTAGE_GIT_MIRROR_show()  { one_of "$PORTAGE_SYNC_TYPE" "git"; }
-function PORTAGE_GIT_MIRROR_help()  { echo "The portage git mirror is the git endpoint that is used to sync the portage tree. You usually should not need to change this!"; }
+function PORTAGE_GIT_MIRROR_help()  { echo "portage git 鏡像是用於同步 portage 樹的 git 端點。通常來講不應更改該項！"; }
 function PORTAGE_GIT_MIRROR_menu()  {
 	dialog \
-		--title "Select portage git mirror" \
-		--inputbox "Enter the portage git mirror that should be used to sync the portage tree." \
+		--title "選擇 portage git 鏡像" \
+		--inputbox "輸入將用於同步 portage 樹的 portage git 鏡像。" \
 		"${INPUTBOX_SIZE[@]}" "$PORTAGE_GIT_MIRROR" \
 		|| return 0
 	PORTAGE_GIT_MIRROR="$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function GENTOO_MIRROR_tag()   { echo "Gentoo mirror"; }
+function GENTOO_MIRROR_tag()   { echo "Gentoo 鏡像"; }
 function GENTOO_MIRROR_label() { echo "($(ellipsis 20 "$GENTOO_MIRROR"))"; }
 function GENTOO_MIRROR_show()  { return 0; }
-function GENTOO_MIRROR_help()  { echo "Enter the initial gentoo mirror that should be used for the installation process (until mirrorselect is run)."; }
+function GENTOO_MIRROR_help()  { echo "輸入應用於安裝過程的初始 Gentoo 鏡像（除非 mirrorselect 被運行）"; }
 function GENTOO_MIRROR_menu()  {
 	dialog \
-		--title "Select gentoo mirror" \
-		--inputbox "Enter the initial gentoo mirror that should be used for the system (or until mirrorselect is run). You need to enter the FULL PATH to the tree including relevant subdirectories. Leave this as it is if in doubt!" \
+		--title "選擇 Gentoo 鏡像" \
+		--inputbox "輸入應用於安裝過程的初始 Gentoo 鏡像（除非 mirrorselect 被運行）。 請輸入指向樹的完整路徑，包今相關的子目錄。不確定時請勿修改該項！" \
 		"${INPUTBOX_SIZE[@]}" "$GENTOO_MIRROR" \
 		|| return 0
 	GENTOO_MIRROR="$dialog_out"
 	UNSAVED_CHANGES=true
 }
 
-function GENTOO_ARCH_tag()   { echo "Gentoo arch"; }
+function GENTOO_ARCH_tag()   { echo "Gentoo 架構"; }
 function GENTOO_ARCH_label() { echo "($GENTOO_ARCH)"; }
 function GENTOO_ARCH_show()  { return 0; }
-function GENTOO_ARCH_help()  { echo "Select gentoo's architecture tag for the new system."; }
+function GENTOO_ARCH_help()  { echo "選擇新系統的 Gentoo 架構標籤"; }
 function GENTOO_ARCH_menu()  {
 	if menu_radiolist \
-		"Select architecture" \
-		"Select the architecture for the new system." \
+		"選擇架構" \
+		"選擇新系統的架構。" \
 		"$GENTOO_ARCH" \
 		"${ALL_GENTOO_ARCHS[@]}"
 	then
@@ -1494,14 +1494,14 @@ function GENTOO_ARCH_menu()  {
 	fi
 }
 
-function GENTOO_SUBARCH_tag()   { echo "Gentoo sub-arch"; }
+function GENTOO_SUBARCH_tag()   { echo "Gentoo 子架構"; }
 function GENTOO_SUBARCH_label() { echo "($GENTOO_SUBARCH)"; }
 function GENTOO_SUBARCH_show()  { [[ "$GENTOO_ARCH" == "x86" ]]; }
-function GENTOO_SUBARCH_help()  { echo "Select gentoo's sub-architecture tag for the new system."; }
+function GENTOO_SUBARCH_help()  { echo "選擇新系統的 Gentoo 子架構標籤。"; }
 function GENTOO_SUBARCH_menu()  {
 	if menu_radiolist \
-		"Select x86 sub-architecture" \
-		"Select the specific sub-architecture for x86." \
+		"選擇 x86 子架構" \
+		"為 x86 選擇特定子架構。" \
 		"$GENTOO_SUBARCH" \
 		"${ALL_GENTOO_SUBARCHS[@]}"
 	then
@@ -1513,59 +1513,59 @@ function GENTOO_SUBARCH_menu()  {
 	fi
 }
 
-function USE_PORTAGE_TESTING_tag()   { echo "Enable bleeding edge (~$GENTOO_ARCH)"; }
+function USE_PORTAGE_TESTING_tag()   { echo "啟用不穩定分支 (~$GENTOO_ARCH)"; }
 function USE_PORTAGE_TESTING_label() { on_off_label "$USE_PORTAGE_TESTING"; }
 function USE_PORTAGE_TESTING_show()  { return 0; }
-function USE_PORTAGE_TESTING_help()  { echo "Determines if the system should use bleeding edge software from the respective architecture's testing branch. This will add ACCEPT_KEYWORDS=\"~\$GENTOO_ARCH\" to /etc/portage/make.conf"; }
+function USE_PORTAGE_TESTING_help()  { echo "決定該系統是否應該使用來自相關架構測試分支的較新程式。將會把 ACCEPT_KEYWORDS=\"~\$GENTOO_ARCH\" 加入至 /etc/portage/make.conf"; }
 function USE_PORTAGE_TESTING_menu()  {
 	on_off_toggle "USE_PORTAGE_TESTING"
 	UNSAVED_CHANGES=true
 }
 
-function SELECT_MIRRORS_tag()   { echo "Run mirrorselect"; }
+function SELECT_MIRRORS_tag()   { echo "運行 mirrorselect"; }
 function SELECT_MIRRORS_label() { on_off_label "$SELECT_MIRRORS"; }
 function SELECT_MIRRORS_show()  { return 0; }
-function SELECT_MIRRORS_help()  { echo "Determines if mirrorselect will be used to determine the best gentoo mirror for the new system."; }
+function SELECT_MIRRORS_help()  { echo "決定是否使用 mirrorselect 確定用於新系統的最佳 Gentoo 鏡像。"; }
 function SELECT_MIRRORS_menu()  {
 	on_off_toggle "SELECT_MIRRORS"
 	UNSAVED_CHANGES=true
 }
 
-function SELECT_MIRRORS_LARGE_FILE_tag()   { echo " └ Use large files"; }
+function SELECT_MIRRORS_LARGE_FILE_tag()   { echo " └ 使用大文件"; }
 function SELECT_MIRRORS_LARGE_FILE_label() { on_off_label "$SELECT_MIRRORS_LARGE_FILE" " └ "; }
 function SELECT_MIRRORS_LARGE_FILE_show()  { is_on "$SELECT_MIRRORS"; }
-function SELECT_MIRRORS_LARGE_FILE_help()  { echo "Determines if mirrorselect uses large files (~10MB) to test mirrors."; }
+function SELECT_MIRRORS_LARGE_FILE_help()  { echo "決定 mirrorselect 是否使用大文件 (~10MB) 測試鏡像。"; }
 function SELECT_MIRRORS_LARGE_FILE_menu()  {
 	on_off_toggle "SELECT_MIRRORS_LARGE_FILE"
 	UNSAVED_CHANGES=true
 }
 
-function ENABLE_SSHD_tag()   { echo "Enable sshd"; }
+function ENABLE_SSHD_tag()   { echo "啟用 sshd"; }
 function ENABLE_SSHD_label() { on_off_label "$ENABLE_SSHD"; }
 function ENABLE_SSHD_show()  { return 0; }
-function ENABLE_SSHD_help()  { echo "Install and enable sshd on the new system. A reasonably secure sshd configuration will be provided. It will by default only allow ed25519 keys, restrict key exchange algorithms to a reasonable subset, disable any password based authentication, and only allow root to login."; }
+function ENABLE_SSHD_help()  { echo "於新系統安裝並啟用 sshd 。將提供一個相當安全的 sshd 配置。預設狀態下僅允許 ed25519 金鑰，限制金鑰交換算法至一個合理的子集，禁用任何基於密碼的驗證，且僅允許 root 登錄"; }
 function ENABLE_SSHD_menu()  {
 	on_off_toggle "ENABLE_SSHD"
 	UNSAVED_CHANGES=true
 }
 
-function ENABLE_BINPKG_tag()   { echo "Enable binary packages"; }
+function ENABLE_BINPKG_tag()   { echo "啟用二進制包"; }
 function ENABLE_BINPKG_label() { on_off_label "$ENABLE_BINPKG"; }
 function ENABLE_BINPKG_show()  { return 0; }
-function ENABLE_BINPKG_help()  { echo "Use binary packages if available."; }
+function ENABLE_BINPKG_help()  { echo "可行時，使用二進制包。"; }
 function ENABLE_BINPKG_menu()  {
 	on_off_toggle "ENABLE_BINPKG"
 	UNSAVED_CHANGES=true
 }
 
-function KERNEL_TYPE_tag()   { echo "Kernel type"; }
+function KERNEL_TYPE_tag()   { echo "內核類型"; }
 function KERNEL_TYPE_label() { echo "($KERNEL_TYPE)"; }
 function KERNEL_TYPE_show()  { return 0; }
-function KERNEL_TYPE_help()  { echo "Select which kernel package to install. 'bin' installs the pre-built binary kernel (gentoo-kernel-bin), while 'source' builds the kernel from source (gentoo-kernel) using the same distribution config."; }
+function KERNEL_TYPE_help()  { echo "選擇要安裝的內核包。 'bin' 將會安裝預建的二進制內核 (gentoo-kernel-bin) ，而 'source' 將以相同的配置從原始碼構建內核 (gentoo-kernel) 。"; }
 function KERNEL_TYPE_menu()  {
 	if menu_radiolist_labeled \
-		"Select kernel type" \
-		"Select which kernel package to install. The 'bin' option installs a pre-built binary kernel, while 'source' compiles the kernel from source locally using the same distribution configuration." \
+		"選擇內核類型" \
+		"選擇要安裝的內核包。 'bin' 選項將安裝一個預建的二進制內核，而 'source' 將在本地以相同配置由原始碼編譯內核" \
 		"$KERNEL_TYPE" \
 		"${KERNEL_TYPES[@]}"
 	then
@@ -1577,42 +1577,42 @@ function KERNEL_TYPE_menu()  {
 	fi
 }
 
-function ROOT_SSH_AUTHORIZED_KEYS_tag()   { echo "Authorized keys (root)"; }
+function ROOT_SSH_AUTHORIZED_KEYS_tag()   { echo "獲授權金鑰 (root)"; }
 function ROOT_SSH_AUTHORIZED_KEYS_label() { echo "$(sed '/^\s*#/d;/^\s*$/d' <<< "$ROOT_SSH_AUTHORIZED_KEYS" | wc -l) keys"; }
 function ROOT_SSH_AUTHORIZED_KEYS_show()  { return 0; }
-function ROOT_SSH_AUTHORIZED_KEYS_help()  { echo "The authorized keys for ssh root login, one per line."; }
+function ROOT_SSH_AUTHORIZED_KEYS_help()  { echo "用於 ssh root 登錄的 ssh 獲授權金鑰，每行一個。"; }
 function ROOT_SSH_AUTHORIZED_KEYS_menu()  {
 	# Prepare file to edit in dialog,
 	# unfortunately <() won't work (probably EOF is encountered before content is available).
 	local tmpfile
-	tmpfile="$(mktemp)" || die "Could not create temporary file."
+	tmpfile="$(mktemp)" || die "無法創建臨時文件。"
 	cat > "$tmpfile" <<EOF
-# Enter all authorized keys for ssh root login.
-# Use <Tab> to navigate between the inputbox, <OK> and <Cancel>.
+# 輸入用於 ssh root 登錄的所有獲授權金鑰。
+# 用 <Tab> 在輸入框間切換 <OK> 和 <Cancel>.
 #
-# All comments will be removed from the final file.
-# If you are on a vconsole and have no means of entering this now,
-# simply edit the final configuration later with a text editor.
+# 所有註釋將在最終文檔中被去除。
+# 若閣下正處於控制台且無意於當下輸入之，
+# 請過後通過文本編輯器修改最終配置。
 
 #ssh-ed25519 ......
 $ROOT_SSH_AUTHORIZED_KEYS
 EOF
 
 	dialog \
-		--title "Enter authorized keys" \
+		--title "輸入獲授權金鑰" \
 		--editbox "$tmpfile" "${EDITTEXT_SIZE[@]}"
 	ROOT_SSH_AUTHORIZED_KEYS="$(sed '/^\s*#/d;/^\s*$/d' <<< "$dialog_out")"
 	UNSAVED_CHANGES=true
 }
 
-function ADDITIONAL_PACKAGES_tag()   { echo "Additional packages"; }
-function ADDITIONAL_PACKAGES_label() { echo "${#ADDITIONAL_PACKAGES[@]} packages"; }
+function ADDITIONAL_PACKAGES_tag()   { echo "額外包"; }
+function ADDITIONAL_PACKAGES_label() { echo "${#ADDITIONAL_PACKAGES[@]} 個包"; }
 function ADDITIONAL_PACKAGES_show()  { return 0; }
-function ADDITIONAL_PACKAGES_help()  { echo "Enter additional packages that should be installed. It is recommended to keep this to a minimum, because of the quite \"interactive\" nature of gentoo package management ;)"; }
+function ADDITIONAL_PACKAGES_help()  { echo "輸入需安裝的額外包。建議保持最小, 因為 Gentoo 包管理器的相當「有交互性」的特點 ;)"; }
 function ADDITIONAL_PACKAGES_menu()  {
 	dialog \
-		--title "Additional packages" \
-		--inputbox "Enter additional packages (portage package ATOMs) to install. Delimited by space." \
+		--title "額外包" \
+		--inputbox "輸入要安裝的額外包 (portage package ATOMs 如 '>=sys-libs/glibc-2.38-r10' ) 。 以空格分開。" \
 		"${INPUTBOX_SIZE[@]}" "${ADDITIONAL_PACKAGES[*]}"
 	# shellcheck disable=SC2206
 	ADDITIONAL_PACKAGES=($dialog_out)

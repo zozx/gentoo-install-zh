@@ -51,7 +51,7 @@ function only_one_of() {
 			if [[ -z $previous ]]; then
 				previous="$a"
 			else
-				die_trace 2 "Only one of the arguments ($*) can be given"
+				die_trace 2 "($*) 只可存其一"
 			fi
 		fi
 	done
@@ -60,16 +60,16 @@ function only_one_of() {
 function create_new_id() {
 	local id="${arguments[$1]}"
 	[[ $id == *';'* ]] \
-		&& die_trace 2 "Identifier contains invalid character ';'"
+		&& die_trace 2 "標識符中存在無效字符 ';'"
 	[[ ! -v DISK_ID_TO_UUID[$id] ]] \
-		|| die_trace 2 "Identifier '$id' already exists"
+		|| die_trace 2 "標識符 '$id' 已存在"
 	DISK_ID_TO_UUID[$id]="$(load_or_generate_uuid "$(base64 -w 0 <<< "$id")")"
 }
 
 function verify_existing_id() {
 	local id="${arguments[$1]}"
 	[[ -v DISK_ID_TO_UUID[$id] ]] \
-		|| die_trace 2 "Identifier $1='$id' not found"
+		|| die_trace 2 "未找到標識符 $1='$id'"
 }
 
 function verify_existing_unique_ids() {
@@ -79,16 +79,16 @@ function verify_existing_unique_ids() {
 	count_orig="$(tr ';' '\n' <<< "$ids" | grep -c '\S')"
 	count_uniq="$(tr ';' '\n' <<< "$ids" | grep '\S' | sort -u | wc -l)"
 	[[ $count_orig -gt 0 ]] \
-		|| die_trace 2 "$arg=... must contain at least one entry"
+		|| die_trace 2 "$arg=... 至少需要一個"
 	[[ $count_orig -eq $count_uniq ]] \
-		|| die_trace 2 "$arg=... contains duplicate identifiers"
+		|| die_trace 2 "$arg=... 包含重複標識符"
 
 	local id
 	# Splitting is intentional here
 	# shellcheck disable=SC2086
 	for id in ${ids//';'/ }; do
 		[[ -v DISK_ID_TO_UUID[$id] ]] \
-			|| die_trace 2 "$arg=... contains unknown identifier '$id'"
+			|| die_trace 2 "$arg=... 包含未知標識符 '$id'"
 	done
 }
 
@@ -103,7 +103,7 @@ function verify_option() {
 			&& return 0
 	done
 
-	die_trace 2 "Invalid option $opt='$arg', must be one of ($*)"
+	die_trace 2 "無效選項 $opt='$arg', 必須為 ($*) 之一"
 }
 
 # Named arguments:
@@ -154,7 +154,7 @@ function create_partition() {
 	verify_option type bios efi swap raid luks linux
 
 	[[ -v "DISK_GPT_HAD_SIZE_REMAINING[${arguments[id]}]" ]] \
-		&& die_trace 1 "Cannot add another partition to table (${arguments[id]}) after size=remaining was used"
+		&& die_trace 1 "無法在 size=remaining 之後向表 (${arguments[id]}) 添加分區"
 
 	# shellcheck disable=SC2034
 	[[ ${arguments[size]} == "remaining" ]] \
@@ -303,7 +303,7 @@ function create_classic_single_disk_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -eq 1 ]] \
-		|| die_trace 1 "Expected exactly one positional argument (the device)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local device="${extra_arguments[0]}"
 	local size_swap="${arguments[swap]}"
 	local type="${arguments[type]:-efi}"
@@ -343,12 +343,12 @@ function create_classic_single_disk_layout() {
 		DISK_ID_ROOT_TYPE="ext4"
 		DISK_ID_ROOT_MOUNT_OPTS="defaults,noatime,errors=remount-ro,discard"
 	else
-		die "Unsupported root filesystem type"
+		die "不支援的根文件系統類型"
 	fi
 }
 
 function create_single_disk_layout() {
-	die "'create_single_disk_layout' is deprecated, please use 'create_classic_single_disk_layout' instead. It is fully option-compatible to the old version."
+	die "'create_single_disk_layout' 已棄用，請以 'create_classic_single_disk_layout' 替代之。其與舊版選項完全兼容。"
 }
 
 # Skip partitioning, and use existing pre-formatted partitions. These must be trivially mountable.
@@ -364,7 +364,7 @@ function create_existing_partitions_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -eq 1 ]] \
-		|| die_trace 1 "Expected exactly one positional argument (the device)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local device="${extra_arguments[0]}"
 	local swap_device="${arguments[swap]}"
 	local boot_device="${arguments[boot]}"
@@ -400,7 +400,7 @@ function create_zfs_centric_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -gt 0 ]] \
-		|| die_trace 1 "Expected at least one positional argument (the devices)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local device="${extra_arguments[0]}"
 	local size_swap="${arguments[swap]}"
 	local type="${arguments[type]:-efi}"
@@ -455,7 +455,7 @@ function create_raid0_luks_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -gt 0 ]] \
-		|| die_trace 1 "Expected at least one positional argument (the devices)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local size_swap="${arguments[swap]}"
 	local type="${arguments[type]:-efi}"
 	local use_luks="${arguments[luks]:-true}"
@@ -500,7 +500,7 @@ function create_raid0_luks_layout() {
 		DISK_ID_ROOT_TYPE="ext4"
 		DISK_ID_ROOT_MOUNT_OPTS="defaults,noatime,errors=remount-ro,discard"
 	else
-		die "Unsupported root filesystem type"
+		die "不支援的根文件系統類型"
 	fi
 }
 
@@ -519,7 +519,7 @@ function create_raid1_luks_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -gt 0 ]] \
-		|| die_trace 1 "Expected at least one positional argument (the devices)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local size_swap="${arguments[swap]}"
 	local type="${arguments[type]:-efi}"
 	local use_luks="${arguments[luks]:-true}"
@@ -565,7 +565,7 @@ function create_raid1_luks_layout() {
 		DISK_ID_ROOT_TYPE="ext4"
 		DISK_ID_ROOT_MOUNT_OPTS="defaults,noatime,errors=remount-ro,discard"
 	else
-		die "Unsupported root filesystem type"
+		die "不支援的根文件系統類型"
 	fi
 }
 
@@ -582,7 +582,7 @@ function create_btrfs_centric_layout() {
 	declare -A arguments; parse_arguments "$@"
 
 	[[ ${#extra_arguments[@]} -gt 0 ]] \
-		|| die_trace 1 "Expected at least one positional argument (the devices)"
+		|| die_trace 1 "需且僅需一個位置參數（設備）"
 	local device="${extra_arguments[0]}"
 	local size_swap="${arguments[swap]}"
 	local type="${arguments[type]:-efi}"
@@ -637,5 +637,5 @@ function create_btrfs_centric_layout() {
 }
 
 function create_btrfs_raid_layout() {
-	die "'create_btrfs_raid_layout' is deprecated, please use 'create_btrfs_centric_layout' instead. It is fully option-compatible to the old version."
+	die "'create_btrfs_raid_layout' 已棄用，請以 'create_btrfs_centric_layout' 替代之。其與舊版選項完全兼容。"
 }

@@ -6,7 +6,7 @@ source "$GENTOO_INSTALL_REPO_DIR/scripts/protection.sh" || exit 1
 # Functions
 
 function sync_time() {
-	einfo "Syncing time"
+	einfo "時間同步中"
 	if command -v ntpd &> /dev/null; then
 		try ntpd -g -q
 	elif command -v chrony &> /dev/null; then
@@ -17,42 +17,42 @@ function sync_time() {
 		try date -s "$(curl -sI http://example.com | grep -i ^date: | cut -d' ' -f3-)"
 	fi
 
-	einfo "Current date: $(LANG=C date)"
-	einfo "Writing time to hardware clock"
+	einfo "現在日期: $(LANG=C date)"
+	einfo "正將時間寫至硬件時鐘"
 	hwclock --systohc --utc \
-		|| die "Could not save time to hardware clock"
+		|| die "無法將時間存至硬件時鐘"
 }
 
 function check_config() {
 	[[ $KEYMAP =~ ^[0-9A-Za-z-]*$ ]] \
-		|| die "KEYMAP contains invalid characters"
+		|| die "KEYMAP 包含無效字符"
 
 	if [[ "$SYSTEMD" == "true" ]]; then
 		[[ "$STAGE3_BASENAME" == *systemd* ]] \
-			|| die "Using systemd requires a systemd stage3 archive!"
+			|| die "使用 systemd 需要 systemd stage3 檔！"
 	else
 		[[ "$STAGE3_BASENAME" != *systemd* ]] \
-			|| die "Using OpenRC requires a non-systemd stage3 archive!"
+			|| die "使用 OpenRC 需要 non-systemd stage3 檔!"
 	fi
 
 	# Check hostname per RFC1123
 	local hostname_regex='^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
 	[[ $HOSTNAME =~ $hostname_regex ]] \
-		|| die "'$HOSTNAME' is not a valid hostname"
+		|| die "'$HOSTNAME' 不是有效主機名"
 
 	[[ -v "DISK_ID_ROOT" && -n $DISK_ID_ROOT ]] \
-		|| die "You must assign DISK_ID_ROOT"
+		|| die "必須分配 DISK_ID_ROOT"
 	[[ -v "DISK_ID_EFI" && -n $DISK_ID_EFI ]] || [[ -v "DISK_ID_BIOS" && -n $DISK_ID_BIOS ]] \
-		|| die "You must assign DISK_ID_EFI or DISK_ID_BIOS"
+		|| die "必須分配 DISK_ID_EFI 或 DISK_ID_BIOS"
 
 	[[ -v "DISK_ID_BIOS" ]] && [[ ! -v "DISK_ID_TO_UUID[$DISK_ID_BIOS]" ]] \
-		&& die "Missing uuid for DISK_ID_BIOS, have you made sure it is used?"
+		&& die "缺少 DISK_ID_BIOS 的 uuid ，是否確認有使用？"
 	[[ -v "DISK_ID_EFI" ]] && [[ ! -v "DISK_ID_TO_UUID[$DISK_ID_EFI]" ]] \
-		&& die "Missing uuid for DISK_ID_EFI, have you made sure it is used?"
+		&& die "缺少 DISK_ID_EFI 的 uuid，是否確定有使用？"
 	[[ -v "DISK_ID_SWAP" ]] && [[ ! -v "DISK_ID_TO_UUID[$DISK_ID_SWAP]" ]] \
-		&& die "Missing uuid for DISK_ID_SWAP, have you made sure it is used?"
+		&& die "缺少 DISK_ID_SWAP 的 uuid, 是否確定有使用？"
 	[[ -v "DISK_ID_ROOT" ]] && [[ ! -v "DISK_ID_TO_UUID[$DISK_ID_ROOT]" ]] \
-		&& die "Missing uuid for DISK_ID_ROOT, have you made sure it is used?"
+		&& die "缺少 DISK_ID_ROOT 的 uuid，是否確定有使用？"
 
 	if [[ -v "DISK_ID_EFI" ]]; then
 		IS_EFI=true
@@ -74,7 +74,7 @@ function preprocess_config() {
 function prepare_installation_environment() {
 	maybe_exec 'before_prepare_environment'
 
-	einfo "Preparing installation environment"
+	einfo "安裝環境準備中"
 
 	local wanted_programs=(
 		gpg
@@ -110,38 +110,38 @@ function prepare_installation_environment() {
 
 function check_encryption_key() {
 	if [[ -z "${GENTOO_INSTALL_ENCRYPTION_KEY+set}" ]]; then
-		elog "You have enabled encryption, but haven't specified a key in the environment variable GENTOO_INSTALL_ENCRYPTION_KEY."
-		if ask "Do you want to enter an encryption key now?"; then
+		elog "加密已啟用，而環境變量 GENTOO_INSTALL_ENCRYPTION_KEY 中未有特定金鑰。"
+		if ask "是否現在輸入加密金鑰？"; then
 			local encryption_key_1
 			local encryption_key_2
 
 			while true; do
 				flush_stdin
-				IFS="" read -s -r -p "Enter encryption key: " encryption_key_1 \
-					|| die "Error in read"
+				IFS="" read -s -r -p "輸入加密金鑰 : " encryption_key_1 \
+					|| die "讀取過程中出現錯誤。"
 				echo
 
 				[[ ${#encryption_key_1} -ge 8 ]] \
-					|| { ewarn "Your encryption key must be at least 8 characters long."; continue; }
+					|| { ewarn "加密金鑰長度須不少於8個字符。"; continue; }
 
 				flush_stdin
-				IFS="" read -s -r -p "Repeat encryption key: " encryption_key_2 \
-					|| die "Error in read"
+				IFS="" read -s -r -p "重複加密金鑰: " encryption_key_2 \
+					|| die "讀取過程中出現錯誤。"
 				echo
 
 				[[ "$encryption_key_1" == "$encryption_key_2" ]] \
-					|| { ewarn "Encryption keys mismatch."; continue; }
+					|| { ewarn "兩次輸入不吻合。"; continue; }
 				break
 			done
 
 			export GENTOO_INSTALL_ENCRYPTION_KEY="$encryption_key_1"
 		else
-			die "Please export GENTOO_INSTALL_ENCRYPTION_KEY with the desired key."
+			die "請以所欲使用之金鑰導出 GENTOO_INSTALL_ENCRYPTION_KEY"
 		fi
 	fi
 
 	[[ ${#GENTOO_INSTALL_ENCRYPTION_KEY} -ge 8 ]] \
-		|| die "Your encryption key must be at least 8 characters long."
+		|| die "加密金鑰長度須不少於8個字符。"
 }
 
 function add_summary_entry() {
@@ -207,11 +207,11 @@ function disk_create_gpt() {
 
 	local ptuuid="${DISK_ID_TO_UUID[$new_id]}"
 
-	einfo "Creating new gpt partition table ($new_id) on $device_desc"
+	einfo "於 $device_desc 創建新 gpt 分區表 ($new_id)"
 	wipefs --quiet --all --force "$device" \
-		|| die "Could not erase previous file system signatures from '$device'"
+		|| die "無法從 '$device' 抹除原文件系統之特徵碼"
 	sgdisk -Z -U "$ptuuid" "$device" >/dev/null \
-		|| die "Could not create new gpt partition table ($new_id) on '$device'"
+		|| die "無法於 '$device' 創建新 gpt 分區表 ($new_id)"
 	partprobe "$device"
 }
 
@@ -233,7 +233,7 @@ function disk_create_partition() {
 
 	local device
 	device="$(resolve_device_by_id "$id")" \
-		|| die "Could not resolve device with id=$id"
+		|| die "無法以 id=$id 解析設備"
 	local partuuid="${DISK_ID_TO_UUID[$new_id]}"
 	local extra_args=""
 	case "$type" in
@@ -246,19 +246,19 @@ function disk_create_partition() {
 		*) ;;
 	esac
 
-	einfo "Creating partition ($new_id) with type=$type, size=$size on $device"
+	einfo "在 $device 上創建 type=$type, size=$size 的分區"
 	# shellcheck disable=SC2086
 	sgdisk -n "0:0:$arg_size" -t "0:$type" -u "0:$partuuid" $extra_args "$device" >/dev/null \
-		|| die "Could not create new gpt partition ($new_id) on '$device' ($id)"
+		|| die "無法在 '$device' ($id) 上創建新 gpt 分區表 ($new_id)"
 	partprobe "$device"
 
 	# On some system, we need to wait a bit for the partition to show up.
 	local new_device
 	new_device="$(resolve_device_by_id "$new_id")" \
-		|| die "Could not resolve new device with id=$new_id"
+		|| die "無法以 id=$new_id 解析新設備"
 	for i in {1..10}; do
 		[[ -e "$new_device" ]] && break
-		[[ "$i" -eq 1 ]] && printf "Waiting for partition (%s) to appear..." "$new_device"
+		[[ "$i" -eq 1 ]] && printf "等待分區 (%s) 出現..." "$new_device"
 		printf " %s" "$((10 - i + 1))"
 		sleep 1
 		[[ "$i" -eq 10 ]] && echo
@@ -290,7 +290,7 @@ function disk_create_raid() {
 	# shellcheck disable=SC2086
 	for id in ${ids//';'/ }; do
 		dev="$(resolve_device_by_id "$id")" \
-			|| die "Could not resolve device with id=$id"
+			|| die "無法以 id=$id 解析設備"
 		devices+=("$dev")
 		devices_desc+="$dev ($id), "
 	done
@@ -307,7 +307,7 @@ function disk_create_raid() {
 	fi
 
 # See https://serverfault.com/questions/1163715/mdadm-value-arch12021-cannot-be-set-as-devname-reason-not-posix-compatible
-	einfo "Creating raid$level ($new_id) on $devices_desc"
+	einfo "在 $devices_desc 上創建 raid$level ($new_id)"
 	mdadm \
 			--create "$mddevice" \
 			--verbose \
@@ -317,7 +317,7 @@ function disk_create_raid() {
 			--homehost="$HOSTNAME" \
 			"${extra_args[@]}" \
 			"${devices[@]}" \
-		|| die "Could not create raid$level array '$mddevice' ($new_id) on $devices_desc"
+		|| die "無法在 $device_desc 上創建 raid$level 陣列 '$mddevice' ($new_id)"
 }
 
 function disk_create_luks() {
@@ -344,7 +344,7 @@ function disk_create_luks() {
 
 	local uuid="${DISK_ID_TO_UUID[$new_id]}"
 
-	einfo "Creating luks ($new_id) on $device_desc"
+	einfo "在 $device_desc 上創建 luks ($new_id)"
 	cryptsetup luksFormat \
 			--type luks2 \
 			--uuid "$uuid" \
@@ -356,20 +356,20 @@ function disk_create_luks() {
 			--key-size 512 \
 			--batch-mode \
 			"$device" \
-		|| die "Could not create luks on $device_desc"
+		|| die "無法在 $device_desc 創建 luks"
 	mkdir -p "$LUKS_HEADER_BACKUP_DIR" \
-		|| die "Could not create luks header backup dir '$LUKS_HEADER_BACKUP_DIR'"
+		|| die "無法創建 luks 頭備份目錄 '$LUKS_HEADER_BACKUP_DIR'"
 	local header_file="$LUKS_HEADER_BACKUP_DIR/luks-header-$id-${uuid,,}.img"
 	[[ ! -e $header_file ]] \
 		|| rm "$header_file" \
-		|| die "Could not remove old luks header backup file '$header_file'"
+		|| die "無法移除舊 luks 頭備份文件 '$header_file'"
 	cryptsetup luksHeaderBackup "$device" \
 			--header-backup-file "$header_file" \
-		|| die "Could not backup luks header on $device_desc"
+		|| die "無法在 $device_desc 備份 luks 頭"
 	cryptsetup open --type luks2 \
 			--key-file <(echo -n "$GENTOO_INSTALL_ENCRYPTION_KEY") \
 			"$device" "$name" \
-		|| die "Could not open luks encrypted device $device_desc"
+		|| die "無法打開 luks 加密設備 $device_desc"
 }
 
 function disk_create_dummy() {
@@ -385,15 +385,15 @@ function init_btrfs() {
 	local device="$1"
 	local desc="$2"
 	mkdir -p /btrfs \
-		|| die "Could not create /btrfs directory"
+		|| die "無法創建 /btrfs 目錄"
 	mount "$device" /btrfs \
-		|| die "Could not mount $desc to /btrfs"
+		|| die "無法將 $desc 掛載至 /btrfs"
 	btrfs subvolume create /btrfs/root \
-		|| die "Could not create btrfs subvolume /root on $desc"
+		|| die "無法在 $desc 創建 btrfs 子卷 /root"
 	btrfs subvolume set-default /btrfs/root \
-		|| die "Could not set default btrfs subvolume to /root on $desc"
+		|| die "無法在 $desc 將預設子卷設定為 /root"
 	umount /btrfs \
-		|| die "Could not unmount btrfs on $desc"
+		|| die "無法在 $desc 解除掛載 btrfs"
 }
 
 function disk_format() {
@@ -407,7 +407,7 @@ function disk_format() {
 
 	local device
 	device="$(resolve_device_by_id "$id")" \
-		|| die "Could not resolve device with id=$id"
+		|| die "無法以 id=$id 解析設備"
 
 	einfo "Formatting $device ($id) with $type"
 	wipefs --quiet --all --force "$device" \
