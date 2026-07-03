@@ -51,53 +51,49 @@ CONFIG="$GENTOO_INSTALL_REPO_DIR/gentoo.conf"
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		""|"help"|"--help"|"-help"|"-h")
-			echo "Usage: $0 [opts]... <action>"
-			echo "Performs a minimal gentoo installation. See https://github.com/oddlama/gentoo-install"
-			echo "for more information. If the configuration file does not exist, the configurator will"
-			echo "be started instead."
+			echo "用法: $0 [opts]... <action>"
+			echo "進行 Gentoo 最小安裝。 參見 https://github.com/zozx/gentoo-install-zh"
+			echo "以獲取更多資訊。若配置文件不存在，配置器將啟動"
 			echo ""
-			echo "Options:"
-			echo "  -c, --config <CONFIG>         Use the given configuration file instead of the default"
-			echo "                                  location (gentoo.conf). Applies to installation as well"
-			echo "                                  as initial configuration in case it doesn't exist."
+			echo "選項:"
+			echo "  -c, --config <CONFIG>           使用所提供的配置文件而非預設"
+			echo "                                  位置 (gentoo.conf) 。 初始配置一併應用於安裝，以防該文件不存在"
 			echo ""
 			echo "Actions:"
-			echo "  -i, --install                 Installs gentoo as configured. This is the default mode,"
-			echo "                                  if the given configuration file exists."
-			echo "  -R, --chroot <DIR> [CMD...]   Chroot into an existing system. The root filesystem"
-			echo "                                  must already be mounted under DIR. All required special"
-			echo "                                  filesystems will be mounted inside, and unmounted when"
-			echo "                                  the chroot exits."
+			echo "  -i, --install                 如已配置般安裝 Gentoo 。若所提供之配置文件存在，則此為預設模式"
+			echo "  -R, --chroot <DIR> [CMD...]   chroot 進入已有系統。根文件系統"
+			echo "                                  必須已在 DIR 下被掛載。全部所需的特殊文件系統"
+			echo "                                  將被掛載於其中, 並於 chroot 退出時被解除掛載。"
 			exit 0
 			;;
 		"-c"|"--config")
 			[[ -f "$2" ]] \
-				|| die "Config file not found: '$2'"
-			CONFIG="$(cd "$ACTUAL_WORKING_DIRECTORY" && realpath --relative-to="$GENTOO_INSTALL_REPO_DIR" "$2" 2>/dev/null)" || die "Could not determine realpath to config"
+				|| die "找不到配置文件 : '$2'"
+			CONFIG="$(cd "$ACTUAL_WORKING_DIRECTORY" && realpath --relative-to="$GENTOO_INSTALL_REPO_DIR" "$2" 2>/dev/null)" || die "無法確定配置的真實路徑"
 			shift
 			;;
 		"-R"|"--chroot")
-			[[ -z $ACTION ]] || die "Multiple actions given"
+			[[ -z $ACTION ]] || die "多重操作"
 			ACTION="chroot"
 			CHROOT_DIR="$2"
-			[[ -e "$CHROOT_DIR" ]] || die "Chroot directory not found: '$CHROOT_DIR'"
+			[[ -e "$CHROOT_DIR" ]] || die "找不到 chroot 路徑 : '$CHROOT_DIR'"
 			shift
 			;;
 		"-i"|"--install")
-			[[ -z $ACTION ]] || die "Multiple actions given"
+			[[ -z $ACTION ]] || die "多重操作"
 			ACTION="install"
 			;;
 		"__install_gentoo_in_chroot")
 			ACTION="__install_gentoo_in_chroot"
 			;;
-		*) die "Invalid option '$1'" ;;
+		*) die "無效選項 '$1'" ;;
 	esac
 	shift
 done
 
 # Check configuration location
 [[ -z "${CONFIG%%"$GENTOO_INSTALL_REPO_DIR"*}" ]] \
-	|| die "Configuration file must be inside the installation directory. This is needed so it is accessible from within the chroot environment."
+	|| die "配置文件必須在安裝目錄內。這是必要的，以使之於 chroot 環境內可以訪問。"
 
 if [[ -z "$ACTION" ]]; then
 	if [[ -e "$CONFIG" ]]; then
@@ -105,7 +101,7 @@ if [[ -z "$ACTION" ]]; then
 		ACTION="install"
 	else
 		# Default if configuration does not exist: Run configurator, and exit afterwards.
-		echo "You have not created a gentoo.conf. Starting configurator instead of installing."
+		echo "gentoo.conf 尚未被創建。 開啟配置器而非安裝。"
 		exec "$GENTOO_INSTALL_REPO_DIR/configure" "$CONFIG"
 	fi
 fi
@@ -113,18 +109,18 @@ fi
 if [[ "$ACTION" != "chroot" ]]; then
 	# Load config if we aren't just chrooting
 	[[ -e "$CONFIG" ]] \
-		 || die "Configuration file '$CONFIG' does not exist. To run the configurator, omit '-i' flag or run ./configure"
+		 || die "配置文件 '$CONFIG' 不存在。 添加 '-i' 或運行 ./configure 以啟動配置器。"
 
 	# shellcheck disable=SC1090
-	source "$CONFIG" || die "Could not source config"
+	source "$CONFIG" || die "無法應用配置"
 	[[ $I_HAVE_READ_AND_EDITED_THE_CONFIG_PROPERLY == "true" ]] \
-		|| die "You have not properly read the config. Edit the config file and set I_HAVE_READ_AND_EDITED_THE_CONFIG_PROPERLY=true to continue."
+		|| die "閣下尚未正確地閱讀配置。請編輯配置文件並設定 I_HAVE_READ_AND_EDITED_THE_CONFIG_PROPERLY=true 以繼續。"
 
 	preprocess_config
 fi
 
 [[ $EUID == 0 ]] \
-	|| die "Must be root"
+	|| die "該程式須由 root 運行"
 
 mkdir_or_die 0755 "$TMP_DIR"
 
@@ -132,5 +128,5 @@ case "$ACTION" in
 	"chroot")  main_chroot "$CHROOT_DIR" "$@" ;;
 	"install") main_install "$@" ;;
 	"__install_gentoo_in_chroot") main_install_gentoo_in_chroot "$@" ;;
-	*) die "Invalid action '$ACTION'" ;;
+	*) die "無效操作 '$ACTION'" ;;
 esac
