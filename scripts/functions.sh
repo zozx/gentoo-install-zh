@@ -411,25 +411,25 @@ function disk_format() {
 
 	einfo "Formatting $device ($id) with $type"
 	wipefs --quiet --all --force "$device" \
-		|| die "Could not erase previous file system signatures from '$device' ($id)"
+		|| die "無法從 '$device' ($id) 抹除原文件系統之特徵碼"
 
 	case "$type" in
 		'bios'|'efi')
 			if [[ -v "arguments[label]" ]]; then
 				mkfs.fat -F 32 -n "$label" "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			else
 				mkfs.fat -F 32 "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			fi
 			;;
 		'swap')
 			if [[ -v "arguments[label]" ]]; then
 				mkswap -L "$label" "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			else
 				mkswap "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			fi
 
 			# Try to swapoff in case the system enabled swap automatically
@@ -438,24 +438,24 @@ function disk_format() {
 		'ext4')
 			if [[ -v "arguments[label]" ]]; then
 				mkfs.ext4 -q -L "$label" "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			else
 				mkfs.ext4 -q "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			fi
 			;;
 		'btrfs')
 			if [[ -v "arguments[label]" ]]; then
 				mkfs.btrfs -q -L "$label" "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			else
 				mkfs.btrfs -q "$device" \
-					|| die "Could not format device '$device' ($id)"
+					|| die "無法格式化設備 '$device' ($id)"
 			fi
 
 			init_btrfs "$device" "'$device' ($id)"
 			;;
-		*) die "Unknown filesystem type" ;;
+		*) die "未知的文件系統類型" ;;
 	esac
 }
 
@@ -472,7 +472,7 @@ function format_zfs_standard() {
 	local devices=("$@")
 	local extra_args=()
 
-	einfo "Creating zfs pool on $devices_desc"
+	einfo "正在 $devices_desc 上創建 zfs 池"
 
 	local zfs_stdin=""
 	if [[ "$encrypt" == true ]]; then
@@ -500,18 +500,18 @@ function format_zfs_standard() {
 		rpool                 \
 		"${devices[@]}"       \
 			<<< "$zfs_stdin"  \
-		|| die "Could not create zfs pool on $devices_desc"
+		|| die "無法在 $devices_desc 上創建 zfs 池"
 
 	if [[ "$compress" != false ]]; then
 		zfs set "compression=$compress" rpool \
-			|| die "Could enable compression on dataset 'rpool'"
+			|| die "無法在數據集 'rpool' 上啟用壓縮"
 	fi
 	zfs create rpool/ROOT \
-		|| die "Could not create zfs dataset 'rpool/ROOT'"
+		|| die "無法創建 zfs 數據集 'rpool/ROOT'"
 	zfs create -o mountpoint=/ rpool/ROOT/default \
-		|| die "Could not create zfs dataset 'rpool/ROOT/default'"
+		|| die "無法創建 zfs 數據集 'rpool/ROOT/default'"
 	zpool set bootfs=rpool/ROOT/default rpool \
-		|| die "Could not set zfs property bootfs on rpool"
+		|| die "無法在 rpool 上設定 zfs 屬性 bootfs"
 }
 
 function disk_format_zfs() {
@@ -537,14 +537,14 @@ function disk_format_zfs() {
 	# shellcheck disable=SC2086
 	for id in ${ids//';'/ }; do
 		dev="$(resolve_device_by_id "$id")" \
-			|| die "Could not resolve device with id=$id"
+			|| die "無法以 id=$id 解析設備"
 		devices+=("$dev")
 		devices_desc+="$dev ($id), "
 	done
 	devices_desc="${devices_desc:0:-2}"
 
 	wipefs --quiet --all --force "${devices[@]}" \
-		|| die "Could not erase previous file system signatures from $devices_desc"
+		|| die "無法從 $devices_desc 抹除原文件系統之特徵碼"
 
 	if [[ "$pool_type" == "custom" ]]; then
 		format_zfs_custom "$devices_desc" "${devices[@]}"
@@ -575,14 +575,14 @@ function disk_format_btrfs() {
 	# shellcheck disable=SC2086
 	for id in ${ids//';'/ }; do
 		dev="$(resolve_device_by_id "$id")" \
-			|| die "Could not resolve device with id=$id"
+			|| die "無法以 id=$id 解析設備"
 		devices+=("$dev")
 		devices_desc+="$dev ($id), "
 	done
 	devices_desc="${devices_desc:0:-2}"
 
 	wipefs --quiet --all --force "${devices[@]}" \
-		|| die "Could not erase previous file system signatures from $devices_desc"
+		|| die "無法從 $devices_desc 抹除原文件系統之特徵碼"
 
 	# Collect extra arguments
 	extra_args=()
@@ -594,9 +594,9 @@ function disk_format_btrfs() {
 		extra_args+=("-L" "$label")
 	fi
 
-	einfo "Creating btrfs on $devices_desc"
+	einfo "在 $devices_desc 上創建 btrfs"
 	mkfs.btrfs -q "${extra_args[@]}" "${devices[@]}" \
-		|| die "Could not create btrfs on $devices_desc"
+		|| die "無法在 $devices_desc 上創建 btrfs"
 
 	init_btrfs "${devices[0]}" "btrfs array ($devices_desc)"
 }
@@ -614,7 +614,7 @@ function apply_disk_action() {
 		'format')            disk_format           ;;
 		'format_zfs')        disk_format_zfs       ;;
 		'format_btrfs')      disk_format_btrfs     ;;
-		*) echo "Ignoring invalid action: ${arguments[action]}" ;;
+		*) echo "忽略無效操作: ${arguments[action]}" ;;
 	esac
 }
 
@@ -715,9 +715,9 @@ function apply_disk_actions() {
 }
 
 function summarize_disk_actions() {
-	elog "[1mCurrent lsblk output:[m"
+	elog "[1m現時 lsblk 之輸出:[m"
 	for_line_in <(lsblk \
-		|| die "Error in lsblk") elog
+		|| die "於 lsblk 發生錯誤") elog
 
 	local disk_action_summarize_only=true
 	declare -A summary_tree
@@ -730,7 +730,7 @@ function summarize_disk_actions() {
 
 	local depth=-1
 	elog
-	elog "[1mConfigured disk layout:[m"
+	elog "[1m已配置之磁碟佈局:[m"
 	elog ────────────────────────────────────────────────────────────────────────────────
 	elog "$(printf '%-26s %-28s %s' NODE ID OPTIONS)"
 	elog ────────────────────────────────────────────────────────────────────────────────
@@ -742,28 +742,27 @@ function apply_disk_configuration() {
 	summarize_disk_actions
 
 	if [[ $NO_PARTITIONING_OR_FORMATTING == true ]]; then
-		elog "You have chosen an existing disk configuration. No devices will"
-		elog "actually be re-partitioned or formatted. Please make sure that all"
-		elog "devices are already formatted."
+		elog "閣下已選擇一現存磁碟配置。設備不會真正被重新分區或格式化"
+		elog "請確保全部設備均已被格式化"
 	else
-		ewarn "Please ensure that all selected devices are fully unmounted and are"
-		ewarn "not otherwise in use by the system. This includes stopping mdadm arrays"
-		ewarn "and closing opened luks volumes if applicable for all relevant devices."
-		ewarn "Otherwise, automatic partitioning may fail."
+		ewarn "請確保所有被選中之設備均已解除掛載"
+		ewarn "且未以其他形式被系統佔用。"
+		ewarn "mdadm陣列應被停下，而已打開的 luks 卷應應被關閉。"
+		ewarn "否則，自動分區或會失敗。"
 	fi
-	ask "Do you really want to apply this disk configuration?" \
-		|| die "Aborted"
-	countdown "Applying in " 5
+	ask "是否確定要應用此磁碟配置？" \
+		|| die "中止"
+	countdown "即將應用 " 5
 
 	maybe_exec 'before_disk_configuration'
 
-	einfo "Applying disk configuration"
+	einfo "應用磁碟配置"
 	apply_disk_actions
 
-	einfo "Disk configuration was applied successfully"
-	elog "[1mNew lsblk output:[m"
+	einfo "磁碟配置已成功應用"
+	elog "[1m新的 lsblk 輸出:[m"
 	for_line_in <(lsblk \
-		|| die "Error in lsblk") elog
+		|| die "在 lsblk 發生錯誤") elog
 
 	maybe_exec 'after_disk_configuration'
 }
@@ -774,9 +773,9 @@ function mount_efivars() {
 		&& return
 
 	# Mount efivars
-	einfo "Mounting efivars"
+	einfo "正在掛載 efivars"
 	mount -t efivarfs efivarfs "/sys/firmware/efi/efivars" \
-		|| die "Could not mount efivarfs"
+		|| die "無法掛載 efivarfs"
 }
 
 function mount_by_id() {
@@ -789,18 +788,18 @@ function mount_by_id() {
 		&& return
 
 	# Mount device
-	einfo "Mounting device with id=$id to '$mountpoint'"
+	einfo "正將 id=$id 之設備掛載至 '$mountpoint'"
 	mkdir -p "$mountpoint" \
-		|| die "Could not create mountpoint directory '$mountpoint'"
+		|| die "無法創建掛載點目錄 '$mountpoint'"
 	dev="$(resolve_device_by_id "$id")" \
-		|| die "Could not resolve device with id=$id"
+		|| die "無法以 id=$id 解析設備"
 	mount "$dev" "$mountpoint" \
-		|| die "Could not mount device '$dev'"
+		|| die "無法掛載設備 '$dev'"
 }
 
 function mount_root() {
 	if [[ $USED_ZFS == "true" ]] && ! mountpoint -q -- "$ROOT_MOUNTPOINT"; then
-		die "Error: Expected zfs to be mounted under '$ROOT_MOUNTPOINT', but it isn't."
+		die "錯誤: zfs 應被掛載於 '$ROOT_MOUNTPOINT', 而事實並非如此。"
 	else
 		mount_by_id "$DISK_ID_ROOT" "$ROOT_MOUNTPOINT"
 	fi
@@ -816,16 +815,16 @@ function bind_repo_dir() {
 		&& return
 
 	# Mount root device
-	einfo "Bind mounting repo directory"
+	einfo "綁定掛載倉庫目錄"
 	mkdir -p "$GENTOO_INSTALL_REPO_BIND" \
-		|| die "Could not create mountpoint directory '$GENTOO_INSTALL_REPO_BIND'"
+		|| die "無法創建掛載點目錄 '$GENTOO_INSTALL_REPO_BIND'"
 	mount --bind "$GENTOO_INSTALL_REPO_DIR_ORIGINAL" "$GENTOO_INSTALL_REPO_BIND" \
-		|| die "Could not bind mount '$GENTOO_INSTALL_REPO_DIR_ORIGINAL' to '$GENTOO_INSTALL_REPO_BIND'"
+		|| die "無法將 '$GENTOO_INSTALL_REPO_DIR_ORIGINAL' 綁定掛載至 '$GENTOO_INSTALL_REPO_BIND'"
 }
 
 function download_stage3() {
 	cd "$TMP_DIR" \
-		|| die "Could not cd into '$TMP_DIR'"
+		|| die "無法進入目錄 '$TMP_DIR'"
 
 	local STAGE3_BASENAME_FINAL
 	if [[ ("$GENTOO_ARCH" == "amd64" && "$STAGE3_VARIANT" == *x32*) || ("$GENTOO_ARCH" == "x86" && -n "$GENTOO_SUBARCH") ]]; then
@@ -844,7 +843,7 @@ function download_stage3() {
 	# Parse output for correct filename
 	CURRENT_STAGE3="$(grep -o "\"${STAGE3_BASENAME_FINAL}-[0-9A-Z]*.tar.xz\"" <<< "$CURRENT_STAGE3" \
 		| sort -u | head -1)" \
-		|| die "Could not parse list of tarballs"
+		|| die "無法解析 tar 包列表"
 	# Strip quotes
 	CURRENT_STAGE3="${CURRENT_STAGE3:1:-1}"
 	# File to indiciate successful verification
@@ -854,35 +853,35 @@ function download_stage3() {
 
 	# Download file if not already downloaded
 	if [[ -e $CURRENT_STAGE3_VERIFIED ]]; then
-		einfo "$STAGE3_BASENAME_FINAL tarball already downloaded and verified"
+		einfo "$STAGE3_BASENAME_FINAL tar 包已下載並通過驗證"
 	else
-		einfo "Downloading $STAGE3_BASENAME_FINAL tarball"
+		einfo "正在下載 $STAGE3_BASENAME_FINAL tar 包"
 		download "$STAGE3_RELEASES/${CURRENT_STAGE3}" "${CURRENT_STAGE3}"
 		download "$STAGE3_RELEASES/${CURRENT_STAGE3}.DIGESTS" "${CURRENT_STAGE3}.DIGESTS"
 
 		# Import gentoo keys
-		einfo "Importing gentoo gpg key"
+		einfo "正在導入 gentoo gpg 金鑰"
 		local GENTOO_GPG_KEY="$TMP_DIR/gentoo-keys.gpg"
 		download "https://gentoo.org/.well-known/openpgpkey/hu/wtktzo4gyuhzu8a4z5fdj3fgmr1u6tob?l=releng" "$GENTOO_GPG_KEY" \
-			|| die "Could not retrieve gentoo gpg key"
+			|| die "無法取得 gentoo gpg 金鑰"
 		gpg --quiet --import < "$GENTOO_GPG_KEY" \
-			|| die "Could not import gentoo gpg key"
+			|| die "無法導入 gentoo gpg 金鑰"
 
 		# Verify DIGESTS signature
-		einfo "Verifying tarball signature"
+		einfo "正在驗證 tar 包簽名"
 		gpg --quiet --verify "${CURRENT_STAGE3}.DIGESTS" \
-			|| die "Signature of '${CURRENT_STAGE3}.DIGESTS' invalid!"
+			|| die "'${CURRENT_STAGE3}.DIGESTS' 簽名無效！"
 
 		# Check hashes
-		einfo "Verifying tarball integrity"
+		einfo "正在驗證 tar 包完整性"
 		# Replace any absolute paths in the digest file with just the stage3 basename, so it will be found by rhash
 		digest_line=$(grep 'tar.xz$' "${CURRENT_STAGE3}.DIGESTS" | sed -e 's/  .*stage3-/  stage3-/')
 		if type rhash &>/dev/null; then
 			rhash -P --check <(echo "# SHA512"; echo "$digest_line") \
-				|| die "Checksum mismatch!"
+				|| die "Checksum 不吻合！"
 		else
 			sha512sum --check <<< "$digest_line" \
-				|| die "Checksum mismatch!"
+				|| die "Checksum 不吻合！"
 		fi
 
 		# Create verification file in case the script is restarted
@@ -896,35 +895,35 @@ function extract_stage3() {
 	mount_root
 
 	[[ -n $CURRENT_STAGE3 ]] \
-		|| die "CURRENT_STAGE3 is not set"
+		|| die "CURRENT_STAGE3 未設定"
 	[[ -e "$TMP_DIR/$CURRENT_STAGE3" ]] \
-		|| die "stage3 file does not exist"
+		|| die "stage3 文件不存在"
 
 	maybe_exec 'before_extract_stage3' "$TMP_DIR/$CURRENT_STAGE3" "$ROOT_MOUNTPOINT"
 
 	# Go to root directory
 	cd "$ROOT_MOUNTPOINT" \
-		|| die "Could not move to '$ROOT_MOUNTPOINT'"
+		|| die "無法移動至 '$ROOT_MOUNTPOINT'"
 	# Ensure the directory is empty
 	find . -mindepth 1 -maxdepth 1 -not -name 'lost+found' \
 		| grep -q . \
-		&& die "root directory '$ROOT_MOUNTPOINT' is not empty"
+		&& die "根目錄 '$ROOT_MOUNTPOINT' 非空"
 
 	# Extract tarball
-	einfo "Extracting stage3 tarball"
+	einfo "stage3 tar 包解壓中"
 	tar xpf "$TMP_DIR/$CURRENT_STAGE3" --xattrs --numeric-owner \
-		|| die "Error while extracting tarball"
+		|| die "解壓 tar 包過程中出錯"
 	cd "$TMP_DIR" \
-		|| die "Could not cd into '$TMP_DIR'"
+		|| die "無法進入 '$TMP_DIR'"
 
 	maybe_exec 'after_extract_stage3' "$TMP_DIR/$CURRENT_STAGE3" "$ROOT_MOUNTPOINT"
 }
 
 function gentoo_umount() {
 	if mountpoint -q -- "$ROOT_MOUNTPOINT"; then
-		einfo "Unmounting root filesystem"
+		einfo "正在解除掛載根文件系統"
 		umount -R -l "$ROOT_MOUNTPOINT" \
-			|| die "Could not unmount filesystems"
+			|| die "無法解除掛載文件系統"
 	fi
 }
 
@@ -936,21 +935,21 @@ function init_bash() {
 
 function env_update() {
 	env-update \
-		|| die "Error in env-update"
+		|| die "env-update 中發生錯誤"
 	source /etc/profile \
-		|| die "Could not source /etc/profile"
+		|| die "無法 source /etc/profile"
 	umask 0077
 }
 
 function mkdir_or_die() {
 	# shellcheck disable=SC2174
 	mkdir -m "$1" -p "$2" \
-		|| die "Could not create directory '$2'"
+		|| die "無法創建目錄 '$2'"
 }
 
 function touch_or_die() {
 	touch "$2" \
-		|| die "Could not touch '$2'"
+		|| die "無法創建 '$2'"
 	chmod "$1" "$2"
 }
 
@@ -958,12 +957,12 @@ function touch_or_die() {
 # $@: command...
 function gentoo_chroot() {
 	if [[ $# -eq 1 ]]; then
-		einfo "To later unmount all virtual filesystems, simply use umount -l ${1@Q}"
+		einfo "欲在之後解除掛載所有虛擬文件系統，請使用 umount -l ${1@Q}"
 		gentoo_chroot "$1" /bin/bash --init-file <(echo 'init_bash')
 	fi
 
 	[[ ${EXECUTED_IN_CHROOT-false} == "false" ]] \
-		|| die "Already in chroot"
+		|| die "已處於 chroot 狀態"
 
 	local chroot_dir="$1"
 	shift
@@ -972,12 +971,12 @@ function gentoo_chroot() {
 	bind_repo_dir
 
 	# Copy resolv.conf
-	einfo "Preparing chroot environment"
+	einfo "正在準備 chroot 環境"
 	install --mode=0644 /etc/resolv.conf "$chroot_dir/etc/resolv.conf" \
-		|| die "Could not copy resolv.conf"
+		|| die "無法複製 resolv.conf"
 
 	# Mount virtual filesystems
-	einfo "Mounting virtual filesystems"
+	einfo "正在掛載虛擬文件系統"
 	(
 		mountpoint -q -- "$chroot_dir/proc" || mount -t proc /proc "$chroot_dir/proc" || exit 1
 		mountpoint -q -- "$chroot_dir/run"  || {
@@ -992,18 +991,18 @@ function gentoo_chroot() {
 		mountpoint -q -- "$chroot_dir/dev"  || {
 			mount --rbind /dev  "$chroot_dir/dev" &&
 			mount --make-rslave "$chroot_dir/dev"; } || exit 1
-	) || die "Could not mount virtual filesystems"
+	) || die "無法掛載虛擬文件系統"
 
 	# Cache lsblk output, because it doesn't work correctly in chroot (returns almost no info for devices, e.g. empty uuids)
 	cache_lsblk_output
 
 	# Execute command
-	einfo "Chrooting..."
+	einfo "正在 chroot..."
 	EXECUTED_IN_CHROOT=true \
 		TMP_DIR="$TMP_DIR" \
 		CACHED_LSBLK_OUTPUT="$CACHED_LSBLK_OUTPUT" \
 		exec chroot -- "$chroot_dir" "$GENTOO_INSTALL_REPO_DIR/scripts/dispatch_chroot.sh" "$@" \
-			|| die "Failed to chroot into '$chroot_dir'."
+			|| die "無法 chroot 至 '$chroot_dir'."
 }
 
 function enable_service() {

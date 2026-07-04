@@ -734,9 +734,9 @@ function msgbox_help() {
 function menu_exit() {
 	if [[ $UNSAVED_CHANGES == "true" ]]; then
 		dialog \
-			--help-button --help-label "Back" \
-			--yes-label "Save" --no-label "Discard" \
-			--yesno "是否儲存該配置？\n（按下 <ESC><ESC> ， 或選擇 <Back> 以繼續進行 Gentoo 配置）" \
+			--help-button --help-label "返回" \
+			--yes-label "儲存" --no-label "放棄" \
+			--yesno "是否儲存該配置？\n（按下 <ESC><ESC> ， 或選擇 <返回> 以繼續進行 Gentoo 配置）" \
 			"${CONFIRM_SIZE[@]}"
 
 		local diag_exit="$?"
@@ -793,11 +793,11 @@ function menu() {
 
 	dialog --colors \
 		--title "Gentoo configuration ($RELA_CONFIG_FILE)" \
-		--extra-button --extra-label "Exit" \
-		--help-button \
+		--extra-button --extra-label "退出" \
+		--help-button --help-label "幫助" \
 		--default-item "$SELECTED_MENU_ITEM" \
-		--ok-label "Select" --cancel-label "Save" \
-		--menu "此為 Gentoo 配置菜單。 仔細閱讀並調整以下所有選項。儲存閣下之配置並在之後運行. 若需更多資訊，請使用 <Help> 。" \
+		--ok-label "選擇" --cancel-label "儲存" \
+		--menu "此為 Gentoo 配置菜單。 仔細閱讀並調整以下所有選項。儲存閣下之配置並在之後運行. 若需更多資訊，請使用 <幫助> 。" \
 		"${MENU_SIZE[@]}" "${tag_item_list[@]}"
 
 	local diag_exit="$?"
@@ -1290,7 +1290,7 @@ function KEYMAP_INITRAMFS_menu()  {
 }
 
 function LOCALES_tag()   { echo "地區"; }
-function LOCALES_label() { echo "$N_LOCALES selected"; }
+function LOCALES_label() { echo "已選擇 $N_LOCALES 個"; }
 function LOCALES_show()  { return 0; }
 function LOCALES_help()  { echo "於新系統將生成之地區設定。注意其語法與已由 locale-gen 生成之地區設定不同。例如 'en_US.utf8' 由 'en_US.UTF-8 UTF-8' 啟用。"; }
 function LOCALES_menu()  {
@@ -1578,7 +1578,7 @@ function KERNEL_TYPE_menu()  {
 }
 
 function ROOT_SSH_AUTHORIZED_KEYS_tag()   { echo "獲授權金鑰 (root)"; }
-function ROOT_SSH_AUTHORIZED_KEYS_label() { echo "$(sed '/^\s*#/d;/^\s*$/d' <<< "$ROOT_SSH_AUTHORIZED_KEYS" | wc -l) keys"; }
+function ROOT_SSH_AUTHORIZED_KEYS_label() { echo "$(sed '/^\s*#/d;/^\s*$/d' <<< "$ROOT_SSH_AUTHORIZED_KEYS" | wc -l) 個金鑰"; }
 function ROOT_SSH_AUTHORIZED_KEYS_show()  { return 0; }
 function ROOT_SSH_AUTHORIZED_KEYS_help()  { echo "用於 ssh root 登錄的 ssh 獲授權金鑰，每行一個。"; }
 function ROOT_SSH_AUTHORIZED_KEYS_menu()  {
