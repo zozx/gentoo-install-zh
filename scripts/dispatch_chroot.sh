@@ -2,7 +2,7 @@
 set -uo pipefail
 
 [[ $EXECUTED_IN_CHROOT != "true" ]] \
-	&& { echo "This script must not be executed directly!該腳本不應直接被執行" >&2; exit 1; }
+	&& { echo "該腳本不應直接被執行！" >&2; exit 1; }
 
 # Source the systems profile
 source /etc/profile

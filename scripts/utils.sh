@@ -51,7 +51,7 @@ function ask() {
 	while true; do
 		flush_stdin
 		read -r -p "$* (Y/n) " response \
-			|| die "Error in read"
+			|| die "讀取時發生錯誤"
 		case "${response,,}" in
 			'') return 0 ;;
 			y|yes) return 0 ;;
@@ -73,22 +73,22 @@ function try() {
 		cmd_status="$?"
 
 		if [[ $cmd_status != 0 ]]; then
-			echo "[1;31m * Command failed: [1;33m\$[m $*"
-			echo "Last command failed with exit code $cmd_status"
+			echo "[1;31m * 命令失敗: [1;33m\$[m $*"
+			echo "最後的命令以 $cmd_status 的退出碼退出"
 
 			# Prompt until input is valid
 			while true; do
-				echo -n "Specify next action $prompt_parens "
+				echo -n "指定下一操作 $prompt_parens "
 				flush_stdin
 				read -r response \
-					|| die "Error in read"
+					|| die "讀取時發生錯誤"
 				case "${response,,}" in
 					''|s|shell)
-						echo "You will be prompted for action again after exiting this shell."
+						echo "退出該 shell 後，閣下將再次被提示進行操作。"
 						/bin/bash --init-file <(echo "init_bash")
 						;;
 					r|retry) continue 2 ;;
-					a|abort) die "Installation aborted" ;;
+					a|abort) die "安裝中止" ;;
 					c|continue) return 0 ;;
 					p|print) echo "[1;33m\$[m $*" ;;
 					*) ;;
@@ -124,13 +124,13 @@ function get_blkid_field_by_device() {
 	local blkid_field="$1"
 	local device="$2"
 	blkid -g -c /dev/null \
-		|| die "Error while executing blkid"
+		|| die "執行 blkid 時發生錯誤"
 	partprobe &>/dev/null
 	local val
 	val="$(blkid -c /dev/null -o export "$device")" \
-		|| die "Error while executing blkid '$device'"
+		|| die "執行 blkid '$device' 時發生錯誤"
 	val="$(grep -- "^$blkid_field=" <<< "$val")" \
-		|| die "Could not find $blkid_field=... in blkid output"
+		|| die "於 blkid 之輸出中找不到 $blkid_field=..."
 	val="${val#"$blkid_field="}"
 	echo -n "$val"
 }
@@ -138,10 +138,10 @@ function get_blkid_field_by_device() {
 function get_blkid_uuid_for_id() {
 	local dev
 	dev="$(resolve_device_by_id "$1")" \
-		|| die "Could not resolve device with id=$dev"
+		|| die "無法以 id=$dev 解析設備"
 	local uuid
 	uuid="$(get_blkid_field_by_device 'UUID' "$dev")" \
-		|| die "Could not get UUID from blkid for device=$dev"
+		|| die "無法從 blkid 中獲取 device=$dev 之 UUID"
 	echo -n "$uuid"
 }
 
@@ -149,13 +149,13 @@ function get_device_by_blkid_field() {
 	local blkid_field="$1"
 	local field_value="$2"
 	blkid -g -c /dev/null \
-		|| die "Error while executing blkid"
+		|| die "執行 blkid 時發生錯誤"
 	type partprobe &>/dev/null && partprobe &>/dev/null
 	local dev
 	dev="$(blkid -c /dev/null -o export -t "$blkid_field=$field_value")" \
-		|| die "Error while executing blkid to find $blkid_field=$field_value"
+		|| die "執行 blkid 以獲取 $blkid_field=$field_value 時發生錯誤"
 	dev="$(grep DEVNAME <<< "$dev")" \
-		|| die "Could not find DEVNAME=... in blkid output"
+		|| die "無法於 blkid 輸出中找到 DEVNAME=..."
 	dev="${dev#"DEVNAME="}"
 	echo -n "$dev"
 }
@@ -178,7 +178,7 @@ function get_device_by_uuid() {
 
 function cache_lsblk_output() {
 	CACHED_LSBLK_OUTPUT="$(lsblk --all --path --pairs --output NAME,PTUUID,PARTUUID)" \
-		|| die "Error while executing lsblk to cache output"
+		|| die "執行 lsblk 以緩存輸出時發生錯誤"
 }
 
 function get_device_by_ptuuid() {
@@ -188,10 +188,10 @@ function get_device_by_ptuuid() {
 		dev="$CACHED_LSBLK_OUTPUT"
 	else
 		dev="$(lsblk --all --path --pairs --output NAME,PTUUID,PARTUUID)" \
-			|| die "Error while executing lsblk to find PTUUID=$ptuuid"
+			|| die "執行 lsblk 以獲取 PTUUID=$ptuuid 時發生錯誤"
 	fi
 	dev="$(grep "ptuuid=\"$ptuuid\" partuuid=\"\"" <<< "${dev,,}")" \
-		|| die "Could not find PTUUID=... in lsblk output"
+		|| die "於 lsblk 輸出中找不到 PTUUID=..."
 	dev="${dev%'" ptuuid='*}"
 	dev="${dev#'name="'}"
 	echo -n "$dev"
@@ -207,12 +207,12 @@ function uuid_to_mduuid() {
 function get_device_by_mdadm_uuid() {
 	local mduuid
 	mduuid="$(uuid_to_mduuid "$1")" \
-		|| die "Could not resolve mduuid from uuid=$1"
+		|| die "無法從 uuid=$1 中解析 mduuid"
 	local dev
 	dev="$(mdadm --examine --scan)" \
-		|| die "Error while executing mdadm to find array with UUID=$mduuid"
+		|| die "執行 mdadm 以獲取帶 UUID=$mduuid 之陣列時發生錯誤"
 	dev="$(grep "uuid=$mduuid" <<< "${dev,,}")" \
-		|| die "Could not find UUID=... in mdadm output"
+		|| die "無法於 mdadm 輸出中找到 UUID=..."
 	dev="${dev%'metadata='*}"
 	dev="${dev#'array'}"
 	dev="${dev#"${dev%%[![:space:]]*}"}"
@@ -261,7 +261,7 @@ function canonicalize_device() {
 function resolve_device_by_id() {
 	local id="$1"
 	[[ -v DISK_ID_TO_RESOLVABLE[$id] ]] \
-		|| die "Cannot resolve id='$id' to a block device (no table entry)"
+		|| die "無法從 id='$id' 中解析出塊設備（表中不存在）"
 
 	local type="${DISK_ID_TO_RESOLVABLE[$id]%%:*}"
 	local arg="${DISK_ID_TO_RESOLVABLE[$id]#*:}"
@@ -274,7 +274,7 @@ function resolve_device_by_id() {
 		'mdadm')    dev=$(get_device_by_mdadm_uuid "$arg") ;;
 		'luks')     dev=$(get_device_by_luks_name  "$arg") ;;
 		'device')   dev="$arg" ;;
-		*) die "Cannot resolve '$type:$arg' to device (unknown type)"
+		*) die "無法從 '$type:$arg' 解析出設備（未知類型）"
 	esac
 
 	canonicalize_device "$dev"
@@ -333,20 +333,20 @@ function parse_arguments() {
 					done
 
 					[[ $has_opt == "true" ]] \
-						|| die_trace 2 "Missing mandatory argument $m=..."
+						|| die_trace 2 "缺少強制性參數 $m=..."
 					;;
 
 				'?')
 					allowed_keys[${m:1}]=true
 					;;
 
-				*) die_trace 2 "Invalid start character in known_arguments, in argument '$m'" ;;
+				*) die_trace 2 "在已知參數 '$m' 中， 出現無效之起始字符" ;;
 			esac
 		done
 
 		for a in "${!arguments[@]}"; do
 			[[ -v allowed_keys[$a] ]] \
-				|| die_trace 2 "Unknown argument '$a'"
+				|| die_trace 2 "未知參數 '$a'"
 		done
 	fi
 }
@@ -393,11 +393,11 @@ function check_wanted_programs() {
 		&& return
 
 	if [[ "${#missing_required[@]}" -gt 0 ]]; then
-		elog "The following programs are required for the installer to work, but are currently missing on your system:" >&2
+		elog "為使安裝器運作，以下程式是必需的，然而在該系統中缺失:" >&2
 		elog "  ${missing_required[*]}" >&2
 	fi
 	if [[ "${#missing_wanted[@]}" -gt 0 ]]; then
-		elog "Missing optional programs:" >&2
+		elog "缺少可選程式:" >&2
 		elog "  ${missing_wanted[*]}" >&2
 	fi
 
@@ -407,8 +407,8 @@ function check_wanted_programs() {
 			[ntpd]=ntp
 			[zfs]=""
 		)
-		elog "Detected pacman package manager."
-		if ask "Do you want to install all missing programs automatically?"; then
+		elog "檢測到 pacman 包管理器。"
+		if ask "是否要自動安裝所有缺失的程式？"; then
 			local packages
 			local need_zfs=false
 
@@ -428,9 +428,9 @@ function check_wanted_programs() {
 			pacman -Sy "${packages[@]}"
 
 			if [[ "$need_zfs" == true ]]; then
-				elog "On an Arch live-stick you need the archzfs repository and some tools and modifications to use zfs."
-				elog "There is an automated installer available at https://raw.githubusercontent.com/eoli3n/archiso-zfs/master/init."
-				if ask "Do you want to automatically download and execute this zfs installation script?"; then
+				elog "在 Arch 的 live 碟中，欲使用 zfs ，需要 archzfs 倉庫以及一些工具和修改。"
+				elog "在 https://raw.githubusercontent.com/eoli3n/archiso-zfs/master/init 有一個可用的自動安裝器"
+				if ask "是否要自動下載並執行該 zfs 安裝腳本？"; then
 					curl -s "https://raw.githubusercontent.com/eoli3n/archiso-zfs/master/init" | bash
 				fi
 			fi
@@ -438,17 +438,17 @@ function check_wanted_programs() {
 			return
 		fi
 	elif type emerge &>/dev/null; then
-		elog "Detected Portage (emerge) package manager."
-		if ask "Do you want to install all missing programs automatically?"; then
-			elog "Updating Portage repository cache..."
-			emerge --sync || die "Failed to synchronize Portage repositories."
+		elog "檢測到 Portage (emerge) 包管理器"
+		if ask "是否要自動安裝所有缺失的程式？"; then
+			elog "正在更新 Portage 倉庫緩存..."
+			emerge --sync || die "Portage 倉庫同步失敗"
 
 			for program in "${missing_required[@]}" "${missing_wanted[@]}"; do
 				if [[ "$program" == "ntpd" ]]; then
-					elog "Installing ntpd using emerge..."
-					emerge --ask ntp || die "Failed to install ntpd."
+					elog "正在通過 emerge 安裝 ntpd..."
+					emerge --ask ntp || die "ntpd 安裝失敗"
 				else
-					elog "You need to manually install $program."
+					elog "$program 需要手動安裝"
 				fi
 			done
 		fi
@@ -456,9 +456,9 @@ function check_wanted_programs() {
 		:
 	else
 		if [[ "${#missing_required[@]}" -gt 0 ]]; then
-			die "Aborted installer because of missing required programs."
+			die "由於所需程式缺失，安裝器中止。"
 		else
-			ask "Continue without recommended programs?"
+			ask "是否在缺失所建議程式的情況下繼續？"
 		fi
 	fi
 }
