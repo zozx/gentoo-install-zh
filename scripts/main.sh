@@ -95,7 +95,7 @@ function configure_portage() {
 	# Persist the same parallelism used during the install itself (see dispatch_chroot.sh)
 	# so the installed system also builds with sensible defaults, not just this session.
 	echo "MAKEOPTS=\"-j$NPROC\"" >> /etc/portage/make.conf \
-		|| die "Could not modify /etc/portage/make.conf"
+		|| die "無法修改 /etc/portage/make.conf"
 
 	if [[ $SELECT_MIRRORS == "true" ]]; then
 		einfo "正在臨時安裝 mirrorselect"
