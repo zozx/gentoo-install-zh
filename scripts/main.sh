@@ -92,6 +92,11 @@ function configure_portage() {
 	touch_or_die 0644 "/etc/portage/package.keywords/zz-autounmask"
 	touch_or_die 0644 "/etc/portage/package.license"
 
+	# Persist the same parallelism used during the install itself (see dispatch_chroot.sh)
+	# so the installed system also builds with sensible defaults, not just this session.
+	echo "MAKEOPTS=\"-j$NPROC\"" >> /etc/portage/make.conf \
+		|| die "Could not modify /etc/portage/make.conf"
+
 	if [[ $SELECT_MIRRORS == "true" ]]; then
 		einfo "正在臨時安裝 mirrorselect"
 		try emerge --verbose --oneshot app-portage/mirrorselect
@@ -249,7 +254,7 @@ function install_kernel_efi() {
 	if mdadm --detail --scan "$efipartdev" | grep -qE "^ARRAY $efipartdev " && [[ "$efipartdev" =~ ^/dev/md[0-9]+$ ]]; then
 		# RAID 1 case: Create EFI boot entries for each RAID member
 		local raid_members
-		raid_members=($(mdadm --detail "$efipartdev" | sed -n 's|.*active sync[^/]*\(/dev/[^ ]*\).*|\1|p' | sort))
+		mapfile -t raid_members < <(mdadm --detail "$efipartdev" | sed -n 's|.*active sync[^/]*\(/dev/[^ ]*\).*|\1|p' | sort)
 
 		if [[ ${#raid_members[@]} -eq 0 ]]; then
 			die "檢測到 RAID 設定，但未為 $efipartdev 找到有效的成員磁碟"

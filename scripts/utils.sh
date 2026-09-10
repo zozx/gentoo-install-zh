@@ -229,6 +229,10 @@ function create_resolve_entry() {
 	local type="$2"
 	local arg="${3,,}"
 
+	# shellcheck disable=SC2004 # DISK_ID_TO_RESOLVABLE is associative (declare -gA in
+	# config.sh); the $ is required here to use $id's value as the key, not the literal
+	# string "id" as bash would for an unmarked bareword subscript. shellcheck can't see
+	# the -A declaration from this file, so it wrongly assumes arithmetic-index context.
 	DISK_ID_TO_RESOLVABLE[$id]="$type:$arg"
 }
 
@@ -236,6 +240,7 @@ function create_resolve_entry_device() {
 	local id="$1"
 	local dev="$2"
 
+	# shellcheck disable=SC2004 # see create_resolve_entry() above - same false positive.
 	DISK_ID_TO_RESOLVABLE[$id]="device:$dev"
 }
 
@@ -311,6 +316,9 @@ function parse_arguments() {
 			continue
 		fi
 
+		# shellcheck disable=SC2004 # `arguments` is always declared -A by every caller
+		# (dynamic scope) before this function runs; $key's value is the intended key,
+		# not the literal string "key". shellcheck can't see the caller-side declare.
 		arguments[$key]="$value"
 	done
 
